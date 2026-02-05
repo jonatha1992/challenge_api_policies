@@ -1,0 +1,4 @@
+policy_number,customer,policy_type,start_date,end_date,premium_usd,status,insured_value_usd
+POL-001,Acme Corp UPDATED,Property,2025-01-01,2025-12-31,9999,active,99999
+POL-002,Globex Inc UPDATED,Auto,2026-01-31,2025-02-01,8888,active,88888
+TEST-101,New Test Company,Property,2025-01-01,2025-12-31,1500,active,5000
