@@ -281,6 +281,68 @@ AIInsightsService
         └─ Reglas heurísticas
 ```
 
+### Flujo del Endpoint POST /ai/insights
+
+**Arquitectura de Capas (NO acceso directo a BD):**
+
+```
+1. Frontend
+   ↓ POST /ai/insights
+   Body: {"filters": {"status": "active", "policy_type": "Property"}}
+
+2. AIController (HTTP Layer)
+   ↓
+   - Recibe filtros del frontend
+   - NO recibe las pólizas en el body
+   - Valida y parsea filtros
+
+3. PolicyService (Data Access Layer)
+   ↓
+   - findAll(filters) → Consulta BD con filtros
+   - getSummary() → Obtiene estadísticas agregadas
+   - Retorna datos al controlador
+
+4. AIInsightsService (Business Logic)
+   ↓
+   - Recibe pólizas y resumen del controlador
+   - Genera insights usando Gemini o análisis local
+   - Retorna insights al controlador
+
+5. AIController
+   ↓
+   Retorna JSON al frontend con insights generados
+```
+
+**¿Por qué NO es arriesgado que el backend acceda a la BD?**
+
+✅ **Usa Repository Pattern**: AIController NO ejecuta SQL directamente, usa PolicyService como abstracción
+✅ **Separation of Concerns**: Cada capa tiene una responsabilidad única
+✅ **Seguridad**: Frontend no puede manipular datos enviando información falsa
+✅ **Performance**: Solo envía filtros (~100 bytes) en lugar de miles de pólizas (~megabytes)
+✅ **Datos Actualizados**: Siempre consulta la fuente de verdad (base de datos)
+✅ **Reutilización**: PolicyService se usa en múltiples controladores
+✅ **Testeable**: Fácil hacer mocking de PolicyService en tests unitarios
+
+**Alternativa INCORRECTA (antipatrón):**
+
+```
+❌ Frontend obtiene 10,000 pólizas de GET /policies
+❌ Frontend envía las 10,000 pólizas en POST /ai/insights
+   Body: {"policies": [{...}, {...}, ...]}  ← Megabytes de datos
+❌ Backend procesa datos del frontend sin verificar con BD
+   → Datos pueden estar manipulados/desactualizados
+   → Mucho tráfico de red innecesario
+   → Vulnerable a manipulación de datos
+```
+
+**Decisión de Diseño: ¿Por qué el frontend solo envía filtros?**
+
+1. **Principio de Single Source of Truth**: La base de datos es la fuente de verdad, no el frontend
+2. **Seguridad**: El backend valida permisos y accesos antes de consultar datos
+3. **Eficiencia**: Reducir payload de red (filtros vs datos completos)
+4. **Escalabilidad**: El backend puede optimizar queries con índices, caching, etc.
+5. **Consistencia**: Garantiza que los insights se generan sobre datos actuales
+
 ### Prompt Engineering
 
 El sistema construye prompts estructurados:
