@@ -44,3 +44,4 @@ export class PropertyMinInsuredValueRule extends BusinessRule {
     return policy.insured_value_usd >= this.MIN_VALUE;
   }
 }
+

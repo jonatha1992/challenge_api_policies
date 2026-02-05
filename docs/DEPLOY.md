@@ -6,8 +6,8 @@
 
 ```bash
 # 1. Clonar repositorio
-git clone https://github.com/tu-usuario/challenge_teknet.git
-cd challenge_teknet
+git clone https://github.com/tu-usuario/challenge_tekne.git
+cd challenge_tekne
 
 # 2. Crear archivo .env desde el ejemplo
 cp .env.example .env
@@ -56,7 +56,7 @@ docker-compose up
 # Database
 DB_USER=postgres
 DB_PASSWORD=postgres
-DB_NAME=challenge_teknet
+DB_NAME=challenge_tekne
 DB_PORT=5432
 
 # Backend
@@ -219,15 +219,15 @@ El challenge pide un **sistema simple** de gestión de pólizas. La arquitectura
 
 ```json
 {
-  "name": "challenge-teknet-backend",
+  "name": "challenge-tekne-backend",
   "type": "Microsoft.Web/sites",
   "properties": {
-    "serverFarmId": "/subscriptions/.../resourceGroups/.../providers/Microsoft.Web/serverfarms/challenge-teknet-plan",
+    "serverFarmId": "/subscriptions/.../resourceGroups/.../providers/Microsoft.Web/serverfarms/challenge-tekne-plan",
     "siteConfig": {
       "linuxFxVersion": "NODE|18-lts",
       "alwaysOn": true,
       "cors": {
-        "allowedOrigins": ["https://challenge-teknet-frontend.azurestaticapps.net"]
+        "allowedOrigins": ["https://challenge-tekne-frontend.azurestaticapps.net"]
       }
     }
   }
@@ -250,7 +250,7 @@ El challenge pide un **sistema simple** de gestión de pólizas. La arquitectura
 **Connection string:**
 
 ```
-postgresql://user:password@server.postgres.database.azure.com:5432/challenge_teknet?sslmode=require
+postgresql://user:password@server.postgres.database.azure.com:5432/challenge_tekne?sslmode=require
 ```
 
 ### 3. Azure Key Vault
@@ -313,7 +313,7 @@ appInsights.defaultClient.trackEvent({
 
 - Build: `npm run build`
 - Output: `dist`
-- API location: `https://challenge-teknet-backend.azurewebsites.net`
+- API location: `https://challenge-tekne-backend.azurewebsites.net`
 
 **staticwebapp.config.json:**
 
@@ -330,7 +330,7 @@ appInsights.defaultClient.trackEvent({
     "rewrite": "/index.html"
   },
   "globalHeaders": {
-    "api-url": "https://challenge-teknet-backend.azurewebsites.net"
+    "api-url": "https://challenge-tekne-backend.azurewebsites.net"
   }
 }
 ```
@@ -347,8 +347,8 @@ on:
     branches: [main]
 
 env:
-  AZURE_WEBAPP_NAME: challenge-teknet-backend
-  AZURE_STATICWEBAPP_NAME: challenge-teknet-frontend
+  AZURE_WEBAPP_NAME: challenge-tekne-backend
+  AZURE_STATICWEBAPP_NAME: challenge-tekne-frontend
 
 jobs:
   build-and-deploy-backend:
@@ -453,3 +453,4 @@ jobs:
 1. **App Service:** Azure mantiene historial de deployments, rollback desde portal o CLI
 2. **Database:** Point-in-time restore disponible
 3. **Frontend:** Re-deploy version anterior desde GitHub Actions
+

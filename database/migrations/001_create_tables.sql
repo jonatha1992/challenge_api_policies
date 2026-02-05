@@ -35,3 +35,4 @@ CREATE TABLE IF NOT EXISTS operations (
 
 CREATE INDEX idx_operations_correlation_id ON operations(correlation_id);
 CREATE INDEX idx_operations_created_at ON operations(created_at);
+

@@ -50,3 +50,4 @@ export const validateEnvOrThrow = (): void => {
     throw new Error('Environment validation failed. Check console for details.');
   }
 };
+

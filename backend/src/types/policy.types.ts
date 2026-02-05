@@ -96,3 +96,4 @@ export interface PolicyFilters {
   limit?: number;            // Límite de resultados por página
   offset?: number;           // Desplazamiento para paginación
 }
+

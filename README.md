@@ -12,7 +12,7 @@ Sistema de gestion de polizas de seguros con validacion, trazabilidad y analisis
 ## Estructura del Proyecto
 
 ```
-challenge_teknet/
+challenge_tekne/
 ├── backend/           # API Node.js + Express
 │   └── src/
 │       ├── controllers/   # Controladores HTTP
@@ -53,7 +53,7 @@ challenge_teknet/
 DB_HOST=tu-servidor.postgres.database.azure.com
 DB_USER=tu-usuario
 DB_PASSWORD=tu-password
-DB_NAME=challenge_teknet
+DB_NAME=challenge_tekne
 ```
 
 **Opcion Docker (PostgreSQL local)**
@@ -74,6 +74,7 @@ chmod +x docker-test.sh
 ```
 
 El script automáticamente:
+
 - ✅ Valida `docker-compose.yml`
 - ✅ Limpia containers anteriores
 - ✅ Construye las imágenes
@@ -129,7 +130,7 @@ npm run test-azure-db
 
 # Ejecutar migraciones
 
-psql -d challenge_teknet -f database/migrations/001_create_tables.sql
+psql -d challenge_tekne -f database/migrations/001_create_tables.sql
 
 ```
 
@@ -163,7 +164,7 @@ La aplicacion inicia en `http://localhost:5173`
 # Database (REQUIRED)
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=challenge_teknet
+DB_NAME=challenge_tekne
 DB_USER=postgres
 DB_PASSWORD=postgres
 
@@ -250,6 +251,7 @@ Body: file (CSV)
 ```
 
 **Campos de respuesta:**
+
 - `inserted_count`: Pólizas nuevas insertadas
 - `updated_count`: Pólizas existentes actualizadas (duplicados)
 - `rejected_count`: Filas rechazadas por errores de validación
@@ -344,6 +346,7 @@ Verifica el estado del servidor y la conexión a la base de datos.
 ### GET /config/validate
 
 Endpoint de diagnóstico completo del sistema. Valida:
+
 - Variables de entorno requeridas y opcionales
 - Conexión a base de datos
 - Versión de Node.js y métricas del runtime
@@ -388,6 +391,7 @@ Endpoint de diagnóstico completo del sistema. Valida:
 Retornado cuando faltan variables requeridas o la base de datos está desconectada.
 
 **Status Values:**
+
 - `healthy`: Todos los checks pasaron
 - `degraded`: Sistema funcional pero faltan componentes opcionales
 - `error`: Falla crítica que impide operación normal
@@ -449,7 +453,7 @@ POL-002,Globex,Auto,2025-02-01,2026-01-31,800,active,15000
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=challenge_teknet
+DB_NAME=challenge_tekne
 DB_USER=postgres
 DB_PASSWORD=postgres
 
@@ -523,10 +527,12 @@ El proyecto incluye un pipeline de CI/CD automatizado que se ejecuta en la rama 
 **Archivo:** `.github/workflows/ci-cd.yml`
 
 **Se ejecuta en:**
+
 - Push a rama `main`
 - Pull requests hacia `main`
 
 **Características:**
+
 - ✅ Tests automatizados del backend
 - ✅ Build multi-arquitectura (amd64, arm64)
 - ✅ Push de imágenes a GitHub Container Registry
@@ -539,12 +545,12 @@ Las imágenes se publican en GitHub Container Registry:
 
 ```bash
 # Descargar imágenes
-docker pull ghcr.io/jonatha1992/challenge_teknet/backend:latest
-docker pull ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+docker pull ghcr.io/jonatha1992/challenge_tekne/backend:latest
+docker pull ghcr.io/jonatha1992/challenge_tekne/frontend:latest
 
 # Ejecutar localmente
-docker run -p 3000:3000 ghcr.io/jonatha1992/challenge_teknet/backend:latest
-docker run -p 80:80 ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+docker run -p 3000:3000 ghcr.io/jonatha1992/challenge_tekne/backend:latest
+docker run -p 80:80 ghcr.io/jonatha1992/challenge_tekne/frontend:latest
 ```
 
 ### Badges
@@ -552,9 +558,9 @@ docker run -p 80:80 ghcr.io/jonatha1992/challenge_teknet/frontend:latest
 Puedes agregar badges al README:
 
 ```markdown
-![CI/CD](https://github.com/jonatha1992/challenge_teknet/workflows/CI%2FCD%20Pipeline/badge.svg?branch=main)
-![Backend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_teknet/backend/latest_tag?color=%2344cc11&ignore=latest&label=backend&trim=)
-![Frontend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_teknet/frontend/latest_tag?color=%2344cc11&ignore=latest&label=frontend&trim=)
+![CI/CD](https://github.com/jonatha1992/challenge_tekne/workflows/CI%2FCD%20Pipeline/badge.svg?branch=main)
+![Backend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_tekne/backend/latest_tag?color=%2344cc11&ignore=latest&label=backend&trim=)
+![Frontend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_tekne/frontend/latest_tag?color=%2344cc11&ignore=latest&label=frontend&trim=)
 ```
 
 ## Scripts

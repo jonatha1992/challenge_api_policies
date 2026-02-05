@@ -46,3 +46,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Nginx se ejecuta en foreground por defecto
 CMD ["nginx", "-g", "daemon off;"]
+

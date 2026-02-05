@@ -57,3 +57,4 @@ export const useBackendHealth = () => {
 
   return { isHealthy, error, isChecking };
 };
+

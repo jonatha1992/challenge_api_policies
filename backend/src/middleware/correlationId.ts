@@ -44,3 +44,4 @@ export const correlationIdMiddleware = (
   // Continuar con el siguiente middleware o controlador
   next();
 };
+

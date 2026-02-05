@@ -121,3 +121,4 @@ El `RuleEngine` itera sobre todas las reglas registradas y llama a `execute()` d
 - **Feedback inmediato:** Metricas de upload visibles inmediatamente
 - **Filtros persistentes:** Se mantienen al paginar
 - **Responsive:** CSS Grid/Flexbox para adaptarse a diferentes pantallas
+

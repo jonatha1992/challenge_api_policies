@@ -115,3 +115,4 @@ export const validateEnvOrExit = (): void => {
     optional_missing: result.missingOptional.length
   });
 };
+

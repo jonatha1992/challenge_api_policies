@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "🐳 Testing Docker Stack - Challenge Teknet" -ForegroundColor Cyan
+Write-Host "🐳 Testing Docker Stack - Challenge tekne" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 

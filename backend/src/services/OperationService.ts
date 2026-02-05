@@ -115,3 +115,4 @@ export class OperationService {
     return queryResult.rows[0] || null;
   }
 }
+

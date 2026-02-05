@@ -8,3 +8,4 @@ ADD COLUMN IF NOT EXISTS rows_updated INTEGER DEFAULT 0;
 
 -- Agregar comentario descriptivo a la columna
 COMMENT ON COLUMN operations.rows_updated IS 'Number of policies updated (not inserted) during the operation';
+

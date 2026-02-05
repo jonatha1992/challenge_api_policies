@@ -36,3 +36,4 @@ afterEach(() => {
 afterAll(async () => {
   // Cleanup global si es necesario
 });
+

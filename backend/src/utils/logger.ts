@@ -30,7 +30,7 @@ const logger = winston.createLogger({
     winston.format.timestamp(),            // Agrega timestamp a cada log
     winston.format.json()                  // Formato JSON para facilitar parsing
   ),
-  defaultMeta: { service: 'challenge-teknet-api' }, // Meta por defecto para identificar el servicio
+  defaultMeta: { service: 'challenge-tekne-api' }, // Meta por defecto para identificar el servicio
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
@@ -93,3 +93,4 @@ export const createContextLogger = (context: LogContext) => {
 
 // Exportamos la instancia principal del logger para uso global.
 export default logger;
+

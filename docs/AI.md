@@ -358,3 +358,4 @@ La integración de IA proporciona:
 - 🛡️ **Fallback robusto** sin dependencias
 
 El sistema está listo para producción con capacidad de escalar el uso de IA según necesidades del negocio.
+

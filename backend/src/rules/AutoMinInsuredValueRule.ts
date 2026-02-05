@@ -44,3 +44,4 @@ export class AutoMinInsuredValueRule extends BusinessRule {
     return policy.insured_value_usd >= this.MIN_VALUE;
   }
 }
+
