@@ -62,6 +62,25 @@ DB_NAME=challenge_teknet
 docker-compose up -d
 ```
 
+**Probar Stack Completo con Docker**
+
+```bash
+# Linux/Mac
+chmod +x docker-test.sh
+./docker-test.sh
+
+# Windows PowerShell
+.\docker-test.ps1
+```
+
+El script automáticamente:
+- ✅ Valida `docker-compose.yml`
+- ✅ Limpia containers anteriores
+- ✅ Construye las imágenes
+- ✅ Inicia los servicios
+- ✅ Verifica health checks
+- ✅ Muestra logs y estado
+
 ### 2. Backend
 
 ```bash
@@ -452,6 +471,92 @@ cd backend
 npm test
 ```
 
+## CI/CD con GitHub Actions
+
+El proyecto incluye un pipeline de CI/CD automatizado que se ejecuta en la rama `main`:
+
+### Pipeline Completo
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Push to main                                       │
+└──────────────────┬──────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────┐
+│  1. Test Backend                                    │
+│     ✓ Instalar dependencias                        │
+│     ✓ Run linter                                    │
+│     ✓ Run tests                                     │
+│     ✓ Upload coverage                               │
+└──────────────────┬──────────────────────────────────┘
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+        ▼                     ▼
+┌──────────────────┐  ┌──────────────────┐
+│ 2. Build Backend │  │ 3. Build Frontend│
+│    Docker Image  │  │    Docker Image  │
+│                  │  │                  │
+│ ✓ Build image    │  │ ✓ Build image    │
+│ ✓ Push to GHCR   │  │ ✓ Push to GHCR   │
+└────────┬─────────┘  └─────────┬────────┘
+         │                      │
+         └──────────┬───────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────────────────┐
+│  4. Security Scan                                   │
+│     ✓ Trivy vulnerability scan                     │
+│     ✓ Upload results to GitHub Security            │
+└──────────────────┬──────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────┐
+│  5. Deploy (Opcional)                               │
+│     ✓ Deploy to production                         │
+└─────────────────────────────────────────────────────┘
+```
+
+### Configuración
+
+**Archivo:** `.github/workflows/ci-cd.yml`
+
+**Se ejecuta en:**
+- Push a rama `main`
+- Pull requests hacia `main`
+
+**Características:**
+- ✅ Tests automatizados del backend
+- ✅ Build multi-arquitectura (amd64, arm64)
+- ✅ Push de imágenes a GitHub Container Registry
+- ✅ Security scanning con Trivy
+- ✅ Cache de layers para builds rápidos
+
+### Imágenes Docker Publicadas
+
+Las imágenes se publican en GitHub Container Registry:
+
+```bash
+# Descargar imágenes
+docker pull ghcr.io/jonatha1992/challenge_teknet/backend:latest
+docker pull ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+
+# Ejecutar localmente
+docker run -p 3000:3000 ghcr.io/jonatha1992/challenge_teknet/backend:latest
+docker run -p 80:80 ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+```
+
+### Badges
+
+Puedes agregar badges al README:
+
+```markdown
+![CI/CD](https://github.com/jonatha1992/challenge_teknet/workflows/CI%2FCD%20Pipeline/badge.svg?branch=main)
+![Backend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_teknet/backend/latest_tag?color=%2344cc11&ignore=latest&label=backend&trim=)
+![Frontend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_teknet/frontend/latest_tag?color=%2344cc11&ignore=latest&label=frontend&trim=)
+```
+
 ## Scripts
 
 **Backend:**
@@ -493,6 +598,13 @@ Este proyecto cuenta con documentación exhaustiva que cubre todos los aspectos 
   - Protección de datos sensibles
   - Validación de entrada y headers de seguridad
   - Mejores prácticas implementadas
+
+- **[VALIDATION.md](docs/VALIDATION.md)** - Flujo completo de validación
+  - Principio "Never Trust the Client"
+  - Validaciones técnicas vs validaciones de negocio
+  - Códigos de error y manejo de duplicados
+  - Diagramas de flujo detallados
+  - Archivos CSV de prueba con ejemplos
 
 - **[AI.md](docs/AI.md)** - Integración con Inteligencia Artificial
   - Arquitectura híbrida (Google Gemini + fallback local)

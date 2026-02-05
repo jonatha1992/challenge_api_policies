@@ -1,0 +1,7 @@
+policy_number,customer,policy_type,start_date,end_date,premium_usd,status,insured_value_usd
+TEST-001,Test Company A,Property,2025-01-01,2025-12-31,1500,active,5000
+TEST-002,Test Company B,Auto,2025-02-01,2026-01-31,1200,active,10000
+TEST-003,Test Company C,Property,2025-03-01,2026-02-28,2000,active,8500
+TEST-004,Test Company D,Auto,2025-04-01,2026-03-31,1800,active,15000
+TEST-005,Test Company E,Life,2025-05-01,2030-04-30,900,active,100000
+TEST-006,Test Company F,Health,2025-06-01,2026-05-31,1100,active,50000
