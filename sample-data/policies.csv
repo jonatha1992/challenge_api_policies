@@ -1,0 +1,51 @@
+policy_number,customer,policy_type,start_date,end_date,premium_usd,status,insured_value_usd
+POL-001,Acme Corp,Property,2025-01-01,2025-12-31,1200,active,5000
+POL-002,Globex Inc,Auto,2025-02-01,2026-01-31,800,active,15000
+POL-003,Initech LLC,Property,2024-06-01,2025-05-31,1500,active,8000
+POL-004,Umbrella Corp,Auto,2025-03-15,2026-03-14,950,active,20000
+POL-005,Stark Industries,Property,2025-01-15,2026-01-14,2500,active,12000
+POL-006,Wayne Enterprises,Life,2025-04-01,2030-03-31,500,active,100000
+POL-007,Oscorp,Health,2025-02-01,2026-01-31,1200,active,50000
+POL-008,LexCorp,Property,2024-01-01,2024-12-31,1800,expired,7500
+POL-009,Cyberdyne Systems,Auto,2025-05-01,2026-04-30,750,active,12000
+POL-010,Weyland Corp,Property,2024-03-01,2025-02-28,3000,expired,15000
+POL-011,Tyrell Corp,Auto,2025-06-01,2026-05-31,1100,active,25000
+POL-012,Massive Dynamic,Life,2025-01-01,2035-12-31,800,active,200000
+POL-013,Aperture Science,Property,2025-07-01,2026-06-30,2200,active,9500
+POL-014,Black Mesa,Health,2024-08-01,2025-07-31,1500,cancelled,75000
+POL-015,Soylent Corp,Auto,2025-01-01,2025-12-31,600,active,11000
+POL-016,Buy n Large,Property,2025-09-01,2026-08-31,4000,active,20000
+POL-017,InGen,Life,2025-02-15,2030-02-14,650,active,150000
+POL-018,Monsters Inc,Auto,2024-11-01,2025-10-31,850,active,18000
+POL-019,Dunder Mifflin,Property,2025-04-15,2026-04-14,1100,active,6000
+POL-020,Pied Piper,Health,2025-03-01,2026-02-28,900,active,40000
+POL-021,Hooli,Auto,2025-01-01,2025-12-31,1300,active,30000
+POL-022,Aviato,Property,2024-07-01,2025-06-30,700,expired,5500
+POL-023,Prestige Worldwide,Auto,2025-08-01,2026-07-31,550,active,13000
+POL-024,Sterling Cooper,Life,2025-05-15,2030-05-14,400,active,80000
+POL-025,Paper Street Soap,Property,2025-10-01,2026-09-30,1650,active,7000
+POL-026,TechNova Solutions,Auto,2025-11-01,2026-10-31,1400,active,28000
+POL-027,GreenEnergy Corp,Property,2025-12-01,2026-11-30,1900,active,9000
+POL-028,Quantum Dynamics,Life,2025-06-15,2030-06-14,750,active,175000
+POL-029,Urban Logistics,Auto,2025-07-01,2026-06-30,1050,active,22000
+POL-030,MediCare Plus,Health,2025-08-01,2026-07-31,1300,active,60000
+POL-031,SkyHigh Airlines,Property,2024-09-01,2025-08-31,2800,expired,14000
+POL-032,DataStream Inc,Auto,2025-09-15,2026-09-14,950,active,19000
+POL-033,EcoBuild Group,Property,2025-10-15,2026-10-14,2100,active,10500
+POL-034,FinTech Innovate,Life,2025-11-01,2030-10-31,600,active,120000
+POL-035,LogiTrans Co,Auto,2025-12-01,2026-11-30,1250,active,26000
+POL-036,HealthFirst Clinic,Health,2025-01-15,2026-01-14,1100,active,55000
+POL-037,Metro Properties,Property,2024-10-01,2025-09-30,3200,expired,16000
+POL-038,AutoMasters Ltd,Auto,2025-02-15,2026-02-14,850,active,17000
+POL-039,SolarTech Systems,Property,2025-03-01,2026-02-28,2400,active,11500
+POL-040,LifeGuard Insurance,Life,2025-04-01,2030-03-31,550,active,95000
+POL-041,DriveSafe Corp,Auto,2025-05-01,2026-04-30,1150,active,23000
+POL-042,Wellness Center,Health,2025-06-01,2026-05-31,1400,active,65000
+POL-043,Prime Estates,Property,2024-11-01,2025-10-31,2700,expired,13500
+POL-044,Speedy Rentals,Auto,2025-07-15,2026-07-14,780,active,15600
+POL-045,Innovate Labs,Property,2025-08-01,2026-07-31,1950,active,9750
+POL-046,Eternal Life Fund,Life,2025-09-01,2030-08-31,700,active,140000
+POL-047,Global Shipping,Auto,2025-10-01,2026-09-30,1350,active,27000
+POL-048,CareMed Network,Health,2025-11-01,2026-10-31,1200,active,58000
+POL-049,Heritage Homes,Property,2024-12-01,2025-11-30,3500,expired,17500
+POL-050,Elite Motors,Auto,2025-12-15,2026-12-14,1000,active,20000
