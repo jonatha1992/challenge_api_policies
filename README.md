@@ -12,7 +12,7 @@ Sistema de gestion de polizas de seguros con validacion, trazabilidad y analisis
 ## Estructura del Proyecto
 
 ```
-challenge_teknet/
+challenge_tekne/
 ├── backend/           # API Node.js + Express
 │   └── src/
 │       ├── controllers/   # Controladores HTTP
@@ -53,7 +53,7 @@ challenge_teknet/
 DB_HOST=tu-servidor.postgres.database.azure.com
 DB_USER=tu-usuario
 DB_PASSWORD=tu-password
-DB_NAME=challenge_teknet
+DB_NAME=challenge_tekne
 ```
 
 **Opcion Docker (PostgreSQL local)**
@@ -129,7 +129,7 @@ npm run test-azure-db
 
 # Ejecutar migraciones
 
-psql -d challenge_teknet -f database/migrations/001_create_tables.sql
+psql -d challenge_tekne -f database/migrations/001_create_tables.sql
 
 ```
 
@@ -163,7 +163,7 @@ La aplicacion inicia en `http://localhost:5173`
 # Database (REQUIRED)
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=challenge_teknet
+DB_NAME=challenge_tekne
 DB_USER=postgres
 DB_PASSWORD=postgres
 
@@ -449,7 +449,7 @@ POL-002,Globex,Auto,2025-02-01,2026-01-31,800,active,15000
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=challenge_teknet
+DB_NAME=challenge_tekne
 DB_USER=postgres
 DB_PASSWORD=postgres
 
@@ -539,12 +539,12 @@ Las imágenes se publican en GitHub Container Registry:
 
 ```bash
 # Descargar imágenes
-docker pull ghcr.io/jonatha1992/challenge_teknet/backend:latest
-docker pull ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+docker pull ghcr.io/jonatha1992/challenge_tekne/backend:latest
+docker pull ghcr.io/jonatha1992/challenge_tekne/frontend:latest
 
 # Ejecutar localmente
-docker run -p 3000:3000 ghcr.io/jonatha1992/challenge_teknet/backend:latest
-docker run -p 80:80 ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+docker run -p 3000:3000 ghcr.io/jonatha1992/challenge_tekne/backend:latest
+docker run -p 80:80 ghcr.io/jonatha1992/challenge_tekne/frontend:latest
 ```
 
 ### Badges
@@ -552,9 +552,9 @@ docker run -p 80:80 ghcr.io/jonatha1992/challenge_teknet/frontend:latest
 Puedes agregar badges al README:
 
 ```markdown
-![CI/CD](https://github.com/jonatha1992/challenge_teknet/workflows/CI%2FCD%20Pipeline/badge.svg?branch=main)
-![Backend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_teknet/backend/latest_tag?color=%2344cc11&ignore=latest&label=backend&trim=)
-![Frontend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_teknet/frontend/latest_tag?color=%2344cc11&ignore=latest&label=frontend&trim=)
+![CI/CD](https://github.com/jonatha1992/challenge_tekne/workflows/CI%2FCD%20Pipeline/badge.svg?branch=main)
+![Backend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_tekne/backend/latest_tag?color=%2344cc11&ignore=latest&label=backend&trim=)
+![Frontend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_tekne/frontend/latest_tag?color=%2344cc11&ignore=latest&label=frontend&trim=)
 ```
 
 ## Scripts
@@ -639,3 +639,4 @@ Si es tu primera vez con el proyecto, sigue este orden:
 ## Autor
 
 Challenge Tekne - Full Stack DEV AI
+

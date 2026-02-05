@@ -68,3 +68,4 @@ ENTRYPOINT ["dumb-init", "--"]
 
 # Comando de inicio
 CMD ["node", "dist/index.js"]
+

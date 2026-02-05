@@ -1,5 +1,5 @@
 {
-  "name": "challenge-teknet-backend",
+  "name": "challenge-tekne-backend",
   "version": "1.0.0",
   "description": "Backend API for Challenge Tekne - Insurance Policy Management",
   "main": "dist/index.js",
@@ -52,3 +52,4 @@
     "typescript": "^5.3.3"
   }
 }
+

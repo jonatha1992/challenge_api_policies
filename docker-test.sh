@@ -5,7 +5,7 @@
 
 set -e
 
-echo "🐳 Testing Docker Stack - Challenge Teknet"
+echo "🐳 Testing Docker Stack - Challenge tekne"
 echo "=========================================="
 echo ""
 
@@ -122,3 +122,4 @@ echo ""
 echo "To stop:"
 echo "  docker-compose down"
 echo ""
+

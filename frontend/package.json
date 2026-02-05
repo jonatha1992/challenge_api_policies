@@ -1,5 +1,5 @@
 {
-  "name": "challenge-teknet-frontend",
+  "name": "challenge-tekne-frontend",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -21,3 +21,4 @@
     "vite": "^7.3.1"
   }
 }
+

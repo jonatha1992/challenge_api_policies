@@ -407,7 +407,7 @@ app.use(cors({
 5. **Dependency Scanning**
    ```bash
    npm audit
-   docker scan teknet-backend:latest
+   docker scan tekne-backend:latest
    ```
 
 6. **Penetration Testing**
@@ -428,3 +428,4 @@ El sistema implementa **múltiples capas de seguridad** que protegen contra las 
 - ⚡ Auto-recuperación ante fallos
 
 Para reportar vulnerabilidades de seguridad, contactar al equipo de desarrollo.
+

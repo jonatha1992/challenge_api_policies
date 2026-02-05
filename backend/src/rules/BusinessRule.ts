@@ -75,3 +75,4 @@ export abstract class BusinessRule {
     return null;
   }
 }
+

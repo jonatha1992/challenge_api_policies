@@ -18,3 +18,4 @@ export interface Operation {
   duration_ms?: number;          // Duración total del procesamiento en milisegundos (opcional)
   error_summary?: string | null; // Resumen de errores si la operación falló (opcional)
 }
+

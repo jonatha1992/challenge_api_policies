@@ -444,3 +444,4 @@ La arquitectura permite:
 - 🔧 Mantenibilidad y testabilidad
 - 🛡️ Seguridad en múltiples capas
 - 📊 Observabilidad completa
+

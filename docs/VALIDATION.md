@@ -896,3 +896,4 @@ Agregar nueva regla de negocio:
 ---
 
 **Última actualización:** 2026-02-05
+

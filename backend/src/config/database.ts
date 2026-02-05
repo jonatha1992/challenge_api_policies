@@ -19,7 +19,7 @@ const isAzure = process.env.DB_HOST?.includes('postgres.database.azure.com');
 export const pool = useSQLite ? null : new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'challenge_teknet',
+  database: process.env.DB_NAME || 'challenge_tekne',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   ssl: isAzure ? { rejectUnauthorized: false } : undefined,
@@ -92,3 +92,4 @@ export const initializeDatabase = async (): Promise<void> => {
     throw error;
   }
 };
+

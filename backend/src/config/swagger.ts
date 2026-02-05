@@ -840,3 +840,4 @@ export const setupSwagger = (app: Express): void => {
 };
 
 export { swaggerSpec };
+

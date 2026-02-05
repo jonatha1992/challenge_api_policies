@@ -119,9 +119,9 @@ DB_PASSWORD: postgres
 
 **Tags generados:**
 ```
-ghcr.io/jonatha1992/challenge_teknet/backend:main
-ghcr.io/jonatha1992/challenge_teknet/backend:main-abc1234
-ghcr.io/jonatha1992/challenge_teknet/backend:latest
+ghcr.io/jonatha1992/challenge_tekne/backend:main
+ghcr.io/jonatha1992/challenge_tekne/backend:main-abc1234
+ghcr.io/jonatha1992/challenge_tekne/backend:latest
 ```
 
 **Cache:** Usa GitHub Actions cache para builds rápidos
@@ -154,9 +154,9 @@ VITE_API_URL=http://localhost:3000
 
 **Tags generados:**
 ```
-ghcr.io/jonatha1992/challenge_teknet/frontend:main
-ghcr.io/jonatha1992/challenge_teknet/frontend:main-abc1234
-ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+ghcr.io/jonatha1992/challenge_tekne/frontend:main
+ghcr.io/jonatha1992/challenge_tekne/frontend:main-abc1234
+ghcr.io/jonatha1992/challenge_tekne/frontend:latest
 ```
 
 ---
@@ -216,7 +216,7 @@ url: ${{ secrets.PRODUCTION_URL }}
 
 ```bash
 # Descargar imagen
-docker pull ghcr.io/jonatha1992/challenge_teknet/backend:latest
+docker pull ghcr.io/jonatha1992/challenge_tekne/backend:latest
 
 # Ejecutar localmente
 docker run -d \
@@ -224,8 +224,8 @@ docker run -d \
   -e DB_HOST=postgres \
   -e DB_USER=postgres \
   -e DB_PASSWORD=postgres \
-  -e DB_NAME=challenge_teknet \
-  ghcr.io/jonatha1992/challenge_teknet/backend:latest
+  -e DB_NAME=challenge_tekne \
+  ghcr.io/jonatha1992/challenge_tekne/backend:latest
 
 # Ver logs
 docker logs -f <container_id>
@@ -235,12 +235,12 @@ docker logs -f <container_id>
 
 ```bash
 # Descargar imagen
-docker pull ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+docker pull ghcr.io/jonatha1992/challenge_tekne/frontend:latest
 
 # Ejecutar localmente
 docker run -d \
   -p 80:80 \
-  ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+  ghcr.io/jonatha1992/challenge_tekne/frontend:latest
 
 # Acceder en el navegador
 http://localhost
@@ -253,7 +253,7 @@ version: '3.8'
 
 services:
   backend:
-    image: ghcr.io/jonatha1992/challenge_teknet/backend:latest
+    image: ghcr.io/jonatha1992/challenge_tekne/backend:latest
     ports:
       - "3000:3000"
     environment:
@@ -262,7 +262,7 @@ services:
       DB_PASSWORD: postgres
 
   frontend:
-    image: ghcr.io/jonatha1992/challenge_teknet/frontend:latest
+    image: ghcr.io/jonatha1992/challenge_tekne/frontend:latest
     ports:
       - "80:80"
 ```
@@ -303,14 +303,14 @@ Agrega badges al `README.md` para mostrar el estado del pipeline:
 ### CI/CD Status Badge
 
 ```markdown
-![CI/CD](https://github.com/jonatha1992/challenge_teknet/workflows/CI%2FCD%20Pipeline/badge.svg?branch=main)
+![CI/CD](https://github.com/jonatha1992/challenge_tekne/workflows/CI%2FCD%20Pipeline/badge.svg?branch=main)
 ```
 
 ### Docker Image Badges
 
 ```markdown
-![Backend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_teknet/backend/latest_tag?color=%2344cc11&ignore=latest&label=backend&trim=)
-![Frontend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_teknet/frontend/latest_tag?color=%2344cc11&ignore=latest&label=frontend&trim=)
+![Backend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_tekne/backend/latest_tag?color=%2344cc11&ignore=latest&label=backend&trim=)
+![Frontend](https://ghcr-badge.egpl.dev/jonatha1992/challenge_tekne/frontend/latest_tag?color=%2344cc11&ignore=latest&label=frontend&trim=)
 ```
 
 ### Coverage Badge
@@ -318,7 +318,7 @@ Agrega badges al `README.md` para mostrar el estado del pipeline:
 Si usas Codecov:
 
 ```markdown
-![Coverage](https://codecov.io/gh/jonatha1992/challenge_teknet/branch/main/graph/badge.svg)
+![Coverage](https://codecov.io/gh/jonatha1992/challenge_tekne/branch/main/graph/badge.svg)
 ```
 
 ---
@@ -471,3 +471,4 @@ test-frontend:
 ---
 
 **Última actualización:** 2026-02-05
+

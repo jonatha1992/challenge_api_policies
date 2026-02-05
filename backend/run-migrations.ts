@@ -98,3 +98,4 @@ if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD) {
 
 // Ejecutar migraciones
 runMigrations();
+

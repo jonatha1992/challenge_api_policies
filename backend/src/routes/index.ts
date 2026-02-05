@@ -76,3 +76,4 @@ router.get('/config/validate', (req, res) => diagnosticController.validate(req, 
 
 // Exportar el router configurado para ser usado en la aplicación principal
 export default router;
+
