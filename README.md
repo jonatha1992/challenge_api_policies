@@ -132,27 +132,7 @@ npm run test-azure-db
 
 psql -d challenge_tekne -f database/migrations/001_create_tables.sql
 
-```
-
-### 2. Backend
-
-```bash
-cd backend
-npm install
-cp .env.example .env
-# Editar .env con las credenciales de tu DB
-npm run dev
-```
-
 El servidor inicia en `http://localhost:3000`
-
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
 
 La aplicacion inicia en `http://localhost:5173`
 
@@ -187,8 +167,6 @@ VITE_API_URL=http://localhost:3000
 ```
 
 **IMPORTANTE**: Las variables de entorno del frontend deben empezar con `VITE_` para ser expuestas al cliente.
-
-## Documentación Interactiva de la API (Swagger)
 
 La API cuenta con documentación interactiva completa generada con Swagger/OpenAPI 3.0.
 
@@ -447,27 +425,6 @@ POL-002,Globex,Auto,2025-02-01,2026-01-31,800,active,15000
 - **Property**: insured_value_usd >= $5,000
 - **Auto**: insured_value_usd >= $10,000
 
-## Variables de Entorno
-
-```env
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=challenge_tekne
-DB_USER=postgres
-DB_PASSWORD=postgres
-
-# Server
-PORT=3000
-NODE_ENV=development
-
-# AI (opcional)
-GEMINI_API_KEY=AIza...
-
-# Logging
-LOG_LEVEL=info
-```
-
 ## Testing
 
 ```bash
@@ -645,4 +602,3 @@ Si es tu primera vez con el proyecto, sigue este orden:
 ## Autor
 
 Challenge Tekne - Full Stack DEV AI
-
