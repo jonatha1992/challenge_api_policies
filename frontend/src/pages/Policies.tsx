@@ -27,6 +27,9 @@ export const Policies = () => {
   // Estado de carga específico para insights
   const [insightsLoading, setInsightsLoading] = useState(false);
 
+  // Estado de error para insights
+  const [insightsError, setInsightsError] = useState<string | null>(null);
+
   /**
    * Función para obtener pólizas del servidor con filtros y paginación
    * Se ejecuta cuando cambian los filtros o la paginación
@@ -68,6 +71,7 @@ export const Policies = () => {
   /**
    * Maneja cambios en los filtros
    * Reinicia el offset de paginación para mostrar resultados desde el inicio
+   * Cierra el panel de insights si está abierto
    */
   const handleFilterChange = (key: string, value: string) => {
     // Actualizar filtro específico
@@ -75,6 +79,10 @@ export const Policies = () => {
 
     // Reiniciar paginación al cambiar filtros
     setPagination(prev => ({ ...prev, offset: 0 }));
+
+    // Cerrar panel de insights si está abierto
+    setInsights(null);
+    setInsightsError(null);
   };
 
   /**
@@ -84,6 +92,7 @@ export const Policies = () => {
   const handleGenerateInsights = async () => {
     // Activar estado de carga de insights
     setInsightsLoading(true);
+    setInsightsError(null);
 
     try {
       // Construir filtros para insights (iguales a los de la vista actual)
@@ -93,14 +102,25 @@ export const Policies = () => {
         ...(filters.q && { q: filters.q })
       };
 
+      console.log('[Frontend] Calling getInsights with filters:', insightFilters);
+
       // Llamar a la API para generar insights
       const result = await getInsights(insightFilters);
+
+      console.log('[Frontend] Insights received:', result);
 
       // Establecer resultado de insights
       setInsights(result);
     } catch (error) {
-      // Log de error
-      console.error('Error generating insights:', error);
+      // Log de error detallado
+      console.error('[Frontend] Error generating insights:', error);
+
+      // Establecer mensaje de error para mostrar al usuario
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Error desconocido al generar insights';
+
+      setInsightsError(errorMessage);
     } finally {
       // Desactivar estado de carga
       setInsightsLoading(false);
@@ -220,6 +240,43 @@ export const Policies = () => {
           </div>
         </div>
       </div>
+
+      {/* Mensaje de error si falla la generación de insights */}
+      {insightsError && (
+        <div style={{
+          margin: '20px 0',
+          padding: '15px',
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          borderRadius: '8px',
+          color: '#c33',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20, flexShrink: 0 }}>
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <div>
+            <strong>Error al generar insights:</strong> {insightsError}
+          </div>
+          <button
+            onClick={() => setInsightsError(null)}
+            style={{
+              marginLeft: 'auto',
+              padding: '5px 10px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#c33'
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Panel de insights si existen */}
       {insights && (

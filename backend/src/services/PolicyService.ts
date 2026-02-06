@@ -151,6 +151,102 @@ export class PolicyService {
   }
 
   /**
+   * Obtiene estadísticas agregadas del portfolio de pólizas con filtros opcionales.
+   * Ejecuta múltiples consultas para calcular totales, conteos por estado
+   * y sumas de premium por tipo de póliza, aplicando los filtros especificados.
+   *
+   * @param filters - Filtros opcionales para limitar el análisis
+   * @returns Objeto con estadísticas del portfolio filtrado
+   */
+  async getSummaryWithFilters(filters?: PolicyFilters): Promise<PolicySummary> {
+    // Construir condiciones WHERE dinámicamente (igual que en findAll)
+    const whereConditions: string[] = [];
+    const parameterValues: unknown[] = [];
+    let parameterIndex = 1;
+
+    // Si hay filtros, construir cláusulas WHERE
+    if (filters) {
+      if (filters.status) {
+        whereConditions.push(`status = $${parameterIndex++}`);
+        parameterValues.push(filters.status);
+      }
+
+      if (filters.policy_type) {
+        whereConditions.push(`policy_type = $${parameterIndex++}`);
+        parameterValues.push(filters.policy_type);
+      }
+
+      if (filters.q) {
+        whereConditions.push(`(policy_number ILIKE $${parameterIndex} OR customer ILIKE $${parameterIndex})`);
+        parameterValues.push(`%${filters.q}%`);
+        parameterIndex++;
+      }
+    }
+
+    // Construir cláusula WHERE completa
+    const whereClause = whereConditions.length > 0
+      ? `WHERE ${whereConditions.join(' AND ')}`
+      : '';
+
+    // Consulta para obtener totales generales con filtros
+    const totalsQuery = await pool.query(`
+      SELECT
+        COUNT(*)::int as total_policies,
+        COALESCE(SUM(premium_usd), 0)::float as total_premium_usd
+      FROM policies
+      ${whereClause}
+    `, parameterValues);
+
+    // Consulta para obtener conteo agrupado por estado con filtros
+    const statusQuery = await pool.query(`
+      SELECT status, COUNT(*)::int as count
+      FROM policies
+      ${whereClause}
+      GROUP BY status
+    `, parameterValues);
+
+    // Consulta para obtener suma de premium agrupada por tipo con filtros
+    const typeQuery = await pool.query(`
+      SELECT policy_type, COALESCE(SUM(premium_usd), 0)::float as premium
+      FROM policies
+      ${whereClause}
+      GROUP BY policy_type
+    `, parameterValues);
+
+    // Construir objeto de respuesta con valores por defecto
+    const countByStatus: Record<string, number> = {
+      active: 0,
+      expired: 0,
+      cancelled: 0
+    };
+
+    // Llenar los conteos por estado con los resultados de la consulta
+    statusQuery.rows.forEach(row => {
+      countByStatus[row.status] = row.count;
+    });
+
+    const premiumByType: Record<string, number> = {
+      Property: 0,
+      Auto: 0,
+      Life: 0,
+      Health: 0
+    };
+
+    // Llenar los premiums por tipo con los resultados de la consulta
+    typeQuery.rows.forEach(row => {
+      premiumByType[row.policy_type] = row.premium;
+    });
+
+    // Retornar el resumen completo
+    return {
+      total_policies: totalsQuery.rows[0].total_policies,
+      total_premium_usd: totalsQuery.rows[0].total_premium_usd,
+      count_by_status: countByStatus,
+      premium_by_type: premiumByType
+    };
+  }
+
+  /**
    * Obtiene estadísticas agregadas del portfolio completo de pólizas.
    * Ejecuta múltiples consultas para calcular totales, conteos por estado
    * y sumas de premium por tipo de póliza.

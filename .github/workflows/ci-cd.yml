@@ -23,7 +23,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ env.NODE_VERSION }}
+      - name: Setup Node.js ${{ env.NODE_VERSION }}x
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
