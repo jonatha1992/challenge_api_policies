@@ -6,6 +6,80 @@ Documentación completa de la feature de IA implementada en el sistema de gesti�
 
 El sistema incluye una **feature de análisis con IA** que genera insights sobre el portfolio de pólizas. Utiliza una **arquitectura híbrida** con Google Gemini como motor principal y un analizador local como fallback.
 
+## Recent Updates (Febrero 2026)
+
+### ✅ Features Implementadas
+
+1. **Recomendaciones Contextualizadas por Filtro**
+   - Las recomendaciones ahora son específicas según el filtro aplicado (status, policy_type, búsqueda)
+   - 8 contextos diferentes con recomendaciones únicas
+   - Ejemplos:
+     - **Active**: "Mantener seguimiento proactivo de renovaciones próximas (90 días antes)"
+     - **Property**: "Revisar valoraciones de inmuebles anualmente"
+     - **Auto**: "Implementar descuentos por buen historial de manejo"
+
+2. **Modal se Cierra Automáticamente al Cambiar Filtros**
+   - Cuando el usuario cambia cualquier filtro, el modal de insights se cierra automáticamente
+   - Evita mostrar datos obsoletos o no relevantes al nuevo filtro
+
+3. **Highlights Reflejan Pólizas Filtradas**
+   - Los highlights (Total Policies, Risk Flags, Recommendations) ahora muestran **solo las estadísticas de las pólizas filtradas**
+   - Antes mostraba siempre el total completo (incorrecto ❌)
+   - Ahora calcula estadísticas dinámicamente según filtros aplicados (correcto ✅)
+   - Implementado mediante `getSummaryWithFilters(filters)` en PolicyService
+
+4. **Análisis Local Mejorado con Contexto**
+   - El fallback local también considera los filtros aplicados
+   - Genera recomendaciones más relevantes basadas en el contexto
+
+5. **Prompts de IA Contextualizados**
+   - Los prompts enviados a Gemini incluyen el contexto de filtros
+   - Método `buildFilterContext()` convierte filtros técnicos a lenguaje natural
+   - Ejemplo: `{ status: 'active', policy_type: 'Auto' }` → "pólizas activas y seguros de auto"
+
+### 📊 Risk Flags Explicados
+
+Los **Risk Flags** son indicadores de riesgo detectados automáticamente:
+
+| Risk Flag | Descripción | Umbral |
+|-----------|-------------|--------|
+| **Alta Concentración** | Un tipo de póliza concentra > 60% del premium | > 60% |
+| **Valores Mínimos Property** | Pólizas Property con valor < $5,500 | < $5,500 |
+| **Valores Mínimos Auto** | Pólizas Auto con valor < $11,000 | < $11,000 |
+| **Pólizas Expiradas** | Más del 20% de pólizas expiradas | > 20% |
+| **Pólizas Canceladas** | Más del 10% de pólizas canceladas | > 10% |
+
+**Interpretación:**
+- **0 Risk Flags** = ✅ Portfolio saludable
+- **1-2 Risk Flags** = ⚠️ Requiere atención
+- **3+ Risk Flags** = 🚨 Acción urgente necesaria
+
+### 🧪 Testing
+
+```bash
+# Test sin filtros
+curl -X POST http://localhost:3000/ai/insights \
+  -H "Content-Type: application/json" \
+  -d '{"filters":{}}'
+
+# Test con filtro status
+curl -X POST http://localhost:3000/ai/insights \
+  -H "Content-Type: application/json" \
+  -d '{"filters":{"status":"active"}}'
+
+# Test con múltiples filtros
+curl -X POST http://localhost:3000/ai/insights \
+  -H "Content-Type: application/json" \
+  -d '{"filters":{"status":"active","policy_type":"Auto"}}'
+```
+
+**Verificación de Resultados:**
+1. **Total Policies** debe reflejar solo las pólizas filtradas
+2. **Insights** deben mencionar el contexto del filtro
+3. **Recomendaciones** deben ser específicas al filtro aplicado
+
+---
+
 ## Arquitectura
 
 ```
@@ -15,12 +89,13 @@ AIController
     ▼
 AIInsightsService
     ├─ Google Gemini (si GEMINI_API_KEY existe)
-    │   ├─ Modelo: gemini-1.5-flash
+    │   ├─ Modelo: gemini-2.0-flash-exp
     │   ├─ Análisis avanzado en la nube
-    │   └─ Context-aware prompts
+    │   ├─ Context-aware prompts
+    │   └─ Recomendaciones específicas por filtro
     └─ Local Analyzer (fallback)
-        ├─ Estadísticas en memoria
-        ├─ Reglas heurísticas
+        ├─ Estadísticas filtradas en memoria
+        ├─ Reglas heurísticas contextualizadas
         └─ Sin dependencias externas
 ```
 
@@ -83,22 +158,22 @@ class AIInsightsService {
 
 **Lógica de fallback:**
 ```typescript
-async generateInsights(filters: PolicyFilters): Promise<InsightsResponse> {
-  // 1. Obtener datos del portfolio
-  const policies = await this.policyService.findAll(filters);
-  const summary = await this.policyService.getSummary();
-
-  // 2. Intentar usar Gemini
+async generateInsights(
+  policies: Policy[],
+  summary: PolicySummary,
+  filters: PolicyFilters
+): Promise<InsightsResponse> {
+  // 1. Intentar usar Gemini con contexto de filtros
   if (this.genAI) {
     try {
-      return await this.generateWithGemini(policies, summary);
+      return await this.generateAIInsights(policies, summary, filters);
     } catch (error) {
       logger.warn('Gemini API failed, using local analyzer', { error });
     }
   }
 
-  // 3. Fallback a análisis local
-  return this.generateLocalInsights(policies, summary);
+  // 2. Fallback a análisis local contextualizado
+  return this.generateLocalInsights(policies, summary, filters);
 }
 ```
 
@@ -111,10 +186,11 @@ async generateInsights(filters: PolicyFilters): Promise<InsightsResponse> {
 GEMINI_API_KEY=AIzaSy...
 ```
 
-**Modelo usado:** `gemini-1.5-flash`
-- ✅ Rápido (~1-2 segundos)
-- ✅ Económico ($0.075 / 1M tokens)
+**Modelo usado:** `gemini-2.0-flash-exp`
+- ✅ Más rápido (~0.5-1 segundo)
+- ✅ Gratis durante preview experimental
 - ✅ Context window: 1M tokens
+- ✅ Mejor comprensión contextual
 
 ### Prompt Engineering
 
@@ -164,21 +240,33 @@ const generationConfig = {
 
 ```typescript
 try {
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-
-  // Parse respuesta
-  const insights = text.split('\n').filter(line => line.trim());
-
-  return { insights, highlights };
-} catch (error) {
-  logger.error('Gemini API error', {
-    error: error.message,
-    code: error.code
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      maxOutputTokens: 800,
+      temperature: 0.5,
+      responseMimeType: 'application/json'  // Forzar respuesta JSON
+    }
   });
 
-  // Fallback automático
-  return this.generateLocalInsights(policies, summary);
+  const content = result.response.text();
+  const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const parsed = JSON.parse(cleanContent);
+
+  return {
+    insights: parsed.insights || [],
+    highlights: {
+      total_policies: summary.total_policies,
+      risk_flags: parsed.risk_flags || 0,
+      recommendations_count: parsed.insights.filter(i =>
+        i.toLowerCase().includes('recomend')
+      ).length
+    }
+  };
+} catch (error) {
+  logger.error('Gemini API error', { error });
+  // Fallback automático con filtros
+  return this.generateLocalInsights(policies, summary, filters);
 }
 ```
 

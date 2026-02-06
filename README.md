@@ -74,6 +74,7 @@ chmod +x docker-test.sh
 ```
 
 El script automáticamente:
+
 - ✅ Valida `docker-compose.yml`
 - ✅ Limpia containers anteriores
 - ✅ Construye las imágenes
@@ -250,6 +251,7 @@ Body: file (CSV)
 ```
 
 **Campos de respuesta:**
+
 - `inserted_count`: Pólizas nuevas insertadas
 - `updated_count`: Pólizas existentes actualizadas (duplicados)
 - `rejected_count`: Filas rechazadas por errores de validación
@@ -344,6 +346,7 @@ Verifica el estado del servidor y la conexión a la base de datos.
 ### GET /config/validate
 
 Endpoint de diagnóstico completo del sistema. Valida:
+
 - Variables de entorno requeridas y opcionales
 - Conexión a base de datos
 - Versión de Node.js y métricas del runtime
@@ -388,6 +391,7 @@ Endpoint de diagnóstico completo del sistema. Valida:
 Retornado cuando faltan variables requeridas o la base de datos está desconectada.
 
 **Status Values:**
+
 - `healthy`: Todos los checks pasaron
 - `degraded`: Sistema funcional pero faltan componentes opcionales
 - `error`: Falla crítica que impide operación normal
@@ -523,10 +527,12 @@ El proyecto incluye un pipeline de CI/CD automatizado que se ejecuta en la rama 
 **Archivo:** `.github/workflows/ci-cd.yml`
 
 **Se ejecuta en:**
+
 - Push a rama `main`
 - Pull requests hacia `main`
 
 **Características:**
+
 - ✅ Tests automatizados del backend
 - ✅ Build multi-arquitectura (amd64, arm64)
 - ✅ Push de imágenes a GitHub Container Registry

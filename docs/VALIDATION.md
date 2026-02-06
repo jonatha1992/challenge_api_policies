@@ -41,6 +41,7 @@ Un usuario malicioso puede:
 #### 2. **Integridad de Datos**
 
 La base de datos debe mantener datos consistentes:
+
 - ✅ No valores inválidos (fechas incorrectas, estados no permitidos)
 - ✅ No violaciones de reglas de negocio (Property < $5,000)
 - ✅ No policy_number duplicados (resuelto con `ON CONFLICT`)
@@ -427,6 +428,7 @@ export class PropertyMinInsuredValueRule extends BusinessRule {
 ```
 
 **Regla:**
+
 - **Aplica a:** Pólizas de tipo `Property`
 - **Requiere:** `insured_value_usd >= 5000`
 - **Código de error:** `PROPERTY_VALUE_TOO_LOW`
@@ -453,6 +455,7 @@ export class AutoMinInsuredValueRule extends BusinessRule {
 ```
 
 **Regla:**
+
 - **Aplica a:** Pólizas de tipo `Auto`
 - **Requiere:** `insured_value_usd >= 10000`
 - **Código de error:** `AUTO_VALUE_TOO_LOW`
@@ -619,6 +622,7 @@ if (result.was_updated) {
 ```
 
 **Técnica:**
+
 - `xmax = 0` → Fue un INSERT nuevo
 - `xmax > 0` → Fue un UPDATE de registro existente
 
@@ -652,6 +656,7 @@ El backend retorna diferentes códigos HTTP según el resultado del procesamient
 ```
 
 **Frontend muestra:**
+
 - ✅ Icono verde
 - ✅ "Upload Successful!"
 - ✅ "All 6 policies processed successfully"
@@ -689,6 +694,7 @@ El backend retorna diferentes códigos HTTP según el resultado del procesamient
 ```
 
 **Frontend muestra:**
+
 - ⚠️ Icono amarillo
 - ⚠️ "Upload Completed with Warnings"
 - ⚠️ "4 processed, 2 rejected"
@@ -744,6 +750,7 @@ El backend retorna diferentes códigos HTTP según el resultado del procesamient
 ```
 
 **Frontend muestra:**
+
 - ❌ Icono rojo
 - ❌ "All Rows Rejected"
 - ❌ "All 5 rows failed validation - nothing was saved"
@@ -768,6 +775,7 @@ TEST-006,Test Company F,Health,2025-06-01,2026-05-31,1100,active,50000
 ```
 
 **Resultado esperado:**
+
 - HTTP 200 ✅
 - `inserted_count`: 6
 - `updated_count`: 0
@@ -775,6 +783,7 @@ TEST-006,Test Company F,Health,2025-06-01,2026-05-31,1100,active,50000
 - `errors`: []
 
 **Todas las filas pasan validaciones:**
+
 - ✅ Policy numbers únicos y no vacíos
 - ✅ Status válidos (active)
 - ✅ Fechas correctas (start < end)
@@ -795,6 +804,7 @@ TEST-101,New Test Company,Property,2025-01-01,2025-12-31,1500,active,5000
 **⚠️ NOTA:** La fila 3 (POL-002) tiene fechas invertidas intencionalmente.
 
 **Resultado esperado:**
+
 - HTTP 207 ⚠️ (Multi-Status)
 - `inserted_count`: 1 (TEST-101)
 - `updated_count`: 1 (POL-001)
@@ -803,6 +813,7 @@ TEST-101,New Test Company,Property,2025-01-01,2025-12-31,1500,active,5000
 - `updated_policies`: ["POL-001"]
 
 **Detalles:**
+
 - ✅ Fila 1 (POL-001): Actualiza póliza existente
 - ❌ Fila 2 (POL-002): Rechazada por fechas invertidas
 - ✅ Fila 3 (TEST-101): Inserta nueva póliza
@@ -822,6 +833,7 @@ TEST-205,Valid Row After Errors,Life,2025-01-01,2030-12-31,1000,active,100000
 ```
 
 **Resultado esperado:**
+
 - HTTP 207 ⚠️ (Multi-Status)
 - `inserted_count`: 1 (TEST-205)
 - `updated_count`: 0
@@ -896,4 +908,3 @@ Agregar nueva regla de negocio:
 ---
 
 **Última actualización:** 2026-02-05
-

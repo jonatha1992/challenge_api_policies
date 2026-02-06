@@ -173,9 +173,31 @@ export const getSummary = async (): Promise<PolicySummary> => {
  * @returns Insights generados por IA con métricas destacadas
  */
 export const getInsights = async (filters: PolicyFilters): Promise<InsightsResponse> => {
-  // Realizar petición POST con filtros para el análisis
-  const response = await api.post<InsightsResponse>('/ai/insights', { filters });
-  return response.data;
+  try {
+    console.log('[API Service] Calling POST /ai/insights with filters:', filters);
+    console.log('[API Service] API Base URL:', API_BASE);
+
+    // Realizar petición POST con filtros para el análisis
+    const response = await api.post<InsightsResponse>('/ai/insights', { filters });
+
+    console.log('[API Service] Response received:', {
+      status: response.status,
+      data: response.data
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('[API Service] Error calling /ai/insights:', error);
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as any;
+      console.error('[API Service] Response error:', {
+        status: axiosError.response?.status,
+        data: axiosError.response?.data,
+        headers: axiosError.response?.headers
+      });
+    }
+    throw error;
+  }
 };
 
 /**

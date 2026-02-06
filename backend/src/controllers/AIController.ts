@@ -45,13 +45,14 @@ export class AIController {
         limit: 100 // Limitar el análisis a 100 pólizas para evitar sobrecarga
       };
 
-      // 3. Obtener la lista de pólizas y el resumen general.
+      // 3. Obtener la lista de pólizas y el resumen FILTRADO.
       // Se hace de forma secuencial para mayor claridad y facilidad de depuración.
       const policiesResult = await this.policyService.findAll(filters);
-      const summary = await this.policyService.getSummary();
+      // IMPORTANTE: Usar getSummaryWithFilters para obtener estadísticas solo de las pólizas filtradas
+      const summary = await this.policyService.getSummaryWithFilters(filters);
 
       // 4. Generar los insights usando el servicio de IA.
-      // Se pasan las pólizas filtradas, el resumen y los filtros aplicados.
+      // Se pasan las pólizas filtradas, el resumen filtrado y los filtros aplicados.
       const insights = await this.aiService.generateInsights(
         policiesResult.items,
         summary,

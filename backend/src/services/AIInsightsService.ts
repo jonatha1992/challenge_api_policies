@@ -55,7 +55,7 @@ export class AIInsightsService {
     }
 
     // Si no hay API key, usar análisis local basado en reglas
-    return this.generateLocalInsights(policies, summary);
+    return this.generateLocalInsights(policies, summary, filters);
   }
 
   /**
@@ -77,33 +77,47 @@ export class AIInsightsService {
     const prompt = this.buildPrompt(policies, summary, filters);
 
     try {
-      // Obtener el modelo de Gemini configurado
-      const model = this.genAI!.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      // Obtener el modelo de Gemini configurado (usando versión 2.0 más reciente)
+      // Construir instrucción del sistema considerando los filtros aplicados
+      const filterContext = this.buildFilterContext(filters);
 
-      // Instrucciones específicas para el modelo de IA
-      const systemInstruction = `Eres un analista de portafolios de seguros. Analiza los datos y proporciona:
-1. Análisis de riesgos y anomalías
-2. 2-3 recomendaciones accionables
+      const model = this.genAI!.getGenerativeModel({
+        model: 'gemini-2.0-flash-exp',
+        systemInstruction: `Eres un analista de portafolios de seguros. Analiza los datos y proporciona:
+1. Análisis de riesgos y anomalías ESPECÍFICOS para ${filterContext}
+2. 2-3 recomendaciones accionables ENFOCADAS en ${filterContext}
 Mantén las respuestas concisas (5-10 líneas total). Responde en español.
-Retorna formato JSON: {"insights": ["insight1", "insight2"], "risk_flags": number}
-Solo responde con el JSON, sin texto adicional.`;
+Retorna SOLO formato JSON válido: {"insights": ["insight1", "insight2", "insight3"], "risk_flags": number}
+No incluyas texto adicional, markdown, ni explicaciones fuera del JSON.`
+      });
+
+      console.log('[AIInsights] Llamando a Gemini API con', policies.length, 'pólizas...');
 
       // Generar contenido con la IA
       const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: systemInstruction + '\n\n' + prompt }] }],
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
-          maxOutputTokens: 500,  // Limitar la longitud de la respuesta
-          temperature: 0.7       // Balance entre creatividad y consistencia
+          maxOutputTokens: 800,  // Aumentar límite para respuestas más completas
+          temperature: 0.5,      // Reducir temperatura para más consistencia
+          responseMimeType: 'application/json'  // Forzar respuesta en JSON
         }
       });
 
+      console.log('[AIInsights] Respuesta recibida de Gemini');
+
       // Extraer el contenido de la respuesta
       const content = result.response.text() || '{}';
+      console.log('[AIInsights] Contenido recibido:', content.substring(0, 200));
 
       try {
         // Limpiar posibles backticks de markdown y parsear JSON
         const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         const parsed = JSON.parse(cleanContent);
+
+        console.log('[AIInsights] JSON parseado exitosamente:', {
+          insightsCount: parsed.insights?.length || 0,
+          riskFlags: parsed.risk_flags
+        });
 
         // Retornar respuesta estructurada
         return {
@@ -116,8 +130,10 @@ Solo responde con el JSON, sin texto adicional.`;
             ).length
           }
         };
-      } catch {
+      } catch (parseError) {
         // Si no se puede parsear JSON, retornar el contenido como un insight simple
+        console.error('[AIInsights] Error parseando JSON de Gemini:', parseError);
+        console.error('[AIInsights] Contenido que falló:', content);
         return {
           insights: [content],
           highlights: {
@@ -129,8 +145,9 @@ Solo responde con el JSON, sin texto adicional.`;
       }
     } catch (error) {
       // Si falla la API de Gemini, hacer fallback al análisis local
-      console.error('Gemini API error, falling back to local analysis:', error);
-      return this.generateLocalInsights(policies, summary);
+      console.error('[AIInsights] Gemini API error, falling back to local analysis:');
+      console.error(error);
+      return this.generateLocalInsights(policies, summary, filters);
     }
   }
 
@@ -141,39 +158,42 @@ Solo responde con el JSON, sin texto adicional.`;
    *
    * @param policies - Pólizas a analizar
    * @param summary - Estadísticas del portfolio
+   * @param filters - Filtros aplicados para contextualizar las recomendaciones
    * @returns Insights generados por reglas locales
    */
   private generateLocalInsights(
     policies: Policy[],
-    summary: PolicySummary
+    summary: PolicySummary,
+    filters: PolicyFilters
   ): InsightsResponse {
     const insights: string[] = [];  // Array para almacenar los insights generados
     let riskFlags = 0;              // Contador de indicadores de riesgo
 
+    // Construir contexto de filtros para recomendaciones específicas
+    const filterContext = this.buildFilterContext(filters);
+
     // 1. Análisis de concentración por tipo de póliza
-    this.analyzeTypeConcentration(summary, insights, riskFlags);
+    riskFlags += this.analyzeTypeConcentration(summary, insights, filters);
 
     // 2. Análisis de valores asegurados cercanos al mínimo
-    this.analyzeMinimumValues(policies, insights, riskFlags);
+    riskFlags += this.analyzeMinimumValues(policies, insights, filters);
 
     // 3. Análisis de distribución por estado
-    this.analyzeStatusDistribution(summary, insights, riskFlags);
+    riskFlags += this.analyzeStatusDistribution(summary, insights, filters);
 
-    // 4. Si no hay insights críticos, agregar resumen positivo
+    // 4. Si no hay insights críticos, agregar resumen contextualizado
     if (insights.length === 0) {
       insights.push(
-        `Portfolio saludable con ${summary.total_policies} póliza(s) y ` +
+        `Análisis de ${filterContext}: ` +
+        `${summary.total_policies} póliza(s) con ` +
         `$${summary.total_premium_usd.toLocaleString()} en premiums totales. ` +
         `No se detectaron anomalías significativas.`
       );
     }
 
-    // 5. Agregar recomendación general si hay datos y espacio
+    // 5. Agregar recomendación específica según filtros
     if (summary.total_policies > 0 && insights.length < 3) {
-      insights.push(
-        `Recomendación general: mantener monitoreo continuo del ratio loss/premium ` +
-        `y revisar periódicamente la distribución de riesgo por tipo de póliza.`
-      );
+      insights.push(this.buildContextualRecommendation(filters, summary));
     }
 
     // Retornar respuesta estructurada
@@ -192,12 +212,15 @@ Solo responde con el JSON, sin texto adicional.`;
   /**
    * Analiza la concentración de premium por tipo de póliza.
    * Identifica si hay un tipo que concentra demasiado riesgo.
+   * @param filters - Filtros aplicados para contextualizar el análisis
+   * @returns Número de risk flags detectados (0 o 1)
    */
   private analyzeTypeConcentration(
     summary: PolicySummary,
     insights: string[],
-    riskFlags: number
-  ): void {
+    filters: PolicyFilters
+  ): number {
+    let riskFlags = 0;
     // Obtener distribución ordenada por premium descendente
     const typeDistribution = Object.entries(summary.premium_by_type)
       .filter(([_, premium]) => premium > 0)
@@ -209,24 +232,31 @@ Solo responde con el JSON, sin texto adicional.`;
 
       // Si la concentración supera el 60%, es un riesgo
       if (concentration > 60) {
-        insights.push(
-          `Alta concentración en pólizas ${topType[0]}: ${concentration.toFixed(1)}% del premium total. ` +
-          `Considere diversificar el portafolio para reducir riesgo.`
-        );
+        const recommendation = filters.policy_type
+          ? `En el segmento de ${filters.policy_type}, se observa alta concentración (${concentration.toFixed(1)}%). ` +
+            `Recomendación: evaluar estrategias de diversificación dentro de este tipo de póliza.`
+          : `Alta concentración en pólizas ${topType[0]}: ${concentration.toFixed(1)}% del premium total. ` +
+            `Considere diversificar el portafolio para reducir riesgo.`;
+
+        insights.push(recommendation);
         riskFlags++;
       }
     }
+    return riskFlags;
   }
 
   /**
    * Analiza pólizas con valores asegurados cercanos al mínimo requerido.
    * Identifica casos que podrían necesitar revisión.
+   * @param filters - Filtros aplicados para contextualizar el análisis
+   * @returns Número de risk flags detectados (0, 1 o 2)
    */
   private analyzeMinimumValues(
     policies: Policy[],
     insights: string[],
-    riskFlags: number
-  ): void {
+    filters: PolicyFilters
+  ): number {
+    let riskFlags = 0;
     // Valores mínimos por tipo según reglas de negocio
     const MIN_VALUES = {
       Property: 5000,
@@ -239,10 +269,13 @@ Solo responde con el JSON, sin texto adicional.`;
     ).length;
 
     if (propertyNearMin > 0) {
-      insights.push(
-        `${propertyNearMin} póliza(s) Property con valor asegurado cercano al mínimo ($${MIN_VALUES.Property.toLocaleString()}). ` +
-        `Recomendación: implementar alertas cuando insured_value < 1.1x del mínimo.`
-      );
+      const recommendation = filters.policy_type === 'Property'
+        ? `Detectadas ${propertyNearMin} póliza(s) de Property con valores cercanos al mínimo requerido. ` +
+          `Recomendación específica: revisar coberturas y ajustar valores asegurados según el perfil de riesgo del cliente.`
+        : `${propertyNearMin} póliza(s) Property con valor asegurado cercano al mínimo ($${MIN_VALUES.Property.toLocaleString()}). ` +
+          `Recomendación: implementar alertas cuando insured_value < 1.1x del mínimo.`;
+
+      insights.push(recommendation);
       riskFlags++;
     }
 
@@ -252,33 +285,43 @@ Solo responde con el JSON, sin texto adicional.`;
     ).length;
 
     if (autoNearMin > 0) {
-      insights.push(
-        `${autoNearMin} póliza(s) Auto con valor asegurado cercano al mínimo ($${MIN_VALUES.Auto.toLocaleString()}). ` +
-        `Considere revisar estos casos para posibles ajustes de cobertura.`
-      );
+      const recommendation = filters.policy_type === 'Auto'
+        ? `Detectadas ${autoNearMin} póliza(s) de Auto con valores mínimos. ` +
+          `Recomendación específica: evaluar si la cobertura actual es suficiente según el valor de mercado del vehículo.`
+        : `${autoNearMin} póliza(s) Auto con valor asegurado cercano al mínimo ($${MIN_VALUES.Auto.toLocaleString()}). ` +
+          `Considere revisar estos casos para posibles ajustes de cobertura.`;
+
+      insights.push(recommendation);
       riskFlags++;
     }
+    return riskFlags;
   }
 
   /**
    * Analiza la distribución de pólizas por estado.
    * Identifica ratios altos de pólizas expiradas o canceladas.
+   * @param filters - Filtros aplicados para contextualizar el análisis
+   * @returns Número de risk flags detectados (0, 1 o 2)
    */
   private analyzeStatusDistribution(
     summary: PolicySummary,
     insights: string[],
-    riskFlags: number
-  ): void {
+    filters: PolicyFilters
+  ): number {
+    let riskFlags = 0;
     if (summary.total_policies > 0) {
       // Análisis de pólizas expiradas
       const expiredCount = summary.count_by_status['expired'] || 0;
       const expiredRatio = expiredCount / summary.total_policies;
 
       if (expiredRatio > 0.2) {  // Más del 20% expiradas
-        insights.push(
-          `${(expiredRatio * 100).toFixed(1)}% de pólizas están expiradas (${expiredCount} de ${summary.total_policies}). ` +
-          `Recomendación: implementar proceso de renovación automática o alertas de vencimiento.`
-        );
+        const recommendation = filters.status === 'expired'
+          ? `Análisis de pólizas expiradas: ${expiredCount} póliza(s) requieren atención inmediata. ` +
+            `Recomendación específica: priorizar contacto con clientes para renovación y evaluar incentivos de retención.`
+          : `${(expiredRatio * 100).toFixed(1)}% de pólizas están expiradas (${expiredCount} de ${summary.total_policies}). ` +
+            `Recomendación: implementar proceso de renovación automática o alertas de vencimiento.`;
+
+        insights.push(recommendation);
         riskFlags++;
       }
 
@@ -287,13 +330,119 @@ Solo responde con el JSON, sin texto adicional.`;
       const cancelledRatio = cancelledCount / summary.total_policies;
 
       if (cancelledRatio > 0.1) {  // Más del 10% canceladas
-        insights.push(
-          `Tasa de cancelación elevada: ${(cancelledRatio * 100).toFixed(1)}%. ` +
-          `Recomendación: analizar causas de cancelación para mejorar retención.`
-        );
+        const recommendation = filters.status === 'cancelled'
+          ? `Análisis de pólizas canceladas: ${cancelledCount} caso(s) identificado(s). ` +
+            `Recomendación específica: realizar encuesta de satisfacción y análisis de competencia para reducir churn.`
+          : `Tasa de cancelación elevada: ${(cancelledRatio * 100).toFixed(1)}%. ` +
+            `Recomendación: analizar causas de cancelación para mejorar retención.`;
+
+        insights.push(recommendation);
         riskFlags++;
       }
     }
+    return riskFlags;
+  }
+
+  /**
+   * Construye una recomendación contextualizada según los filtros aplicados.
+   * Genera recomendaciones específicas para el segmento de pólizas analizado.
+   *
+   * @param filters - Filtros aplicados
+   * @param summary - Estadísticas del portfolio
+   * @returns Recomendación específica para el contexto
+   */
+  private buildContextualRecommendation(
+    filters: PolicyFilters,
+    summary: PolicySummary
+  ): string {
+    // Recomendación específica por estado
+    if (filters.status === 'active') {
+      return `Pólizas activas: Mantener seguimiento proactivo de renovaciones próximas (90 días antes) ` +
+        `y evaluar oportunidades de cross-selling de productos complementarios.`;
+    }
+
+    if (filters.status === 'expired') {
+      return `Pólizas expiradas: Implementar campaña de recuperación con incentivos personalizados ` +
+        `y contacto directo para entender razones de no renovación.`;
+    }
+
+    if (filters.status === 'cancelled') {
+      return `Pólizas canceladas: Realizar análisis de causas raíz (precio, servicio, competencia) ` +
+        `y desarrollar estrategia de prevención de churn para casos similares.`;
+    }
+
+    // Recomendación específica por tipo de póliza
+    if (filters.policy_type === 'Property') {
+      return `Seguros de Propiedad: Revisar valoraciones de inmuebles anualmente y ofrecer ` +
+        `coberturas adicionales (desastres naturales, robo, daños).`;
+    }
+
+    if (filters.policy_type === 'Auto') {
+      return `Seguros de Auto: Implementar descuentos por buen historial de manejo y ` +
+        `considerar telemetría para ajustar primas según comportamiento real.`;
+    }
+
+    if (filters.policy_type === 'Life') {
+      return `Seguros de Vida: Evaluar cambios en circunstancias personales de clientes ` +
+        `(matrimonio, hijos, hipoteca) para ajustar coberturas y beneficiarios.`;
+    }
+
+    if (filters.policy_type === 'Health') {
+      return `Seguros de Salud: Promover programas de prevención y wellness para reducir ` +
+        `siniestralidad y mejorar satisfacción del cliente.`;
+    }
+
+    // Recomendación general si hay búsqueda por texto
+    if (filters.q) {
+      return `Búsqueda personalizada: Revisar los resultados específicos encontrados y ` +
+        `considerar patrones comunes para acciones preventivas o correctivas.`;
+    }
+
+    // Recomendación general por defecto
+    return `Recomendación general: Mantener monitoreo continuo del ratio loss/premium ` +
+      `y revisar periódicamente la distribución de riesgo por tipo de póliza.`;
+  }
+
+  /**
+   * Construye el contexto de filtros para las instrucciones de la IA.
+   * Genera una descripción en lenguaje natural de los filtros aplicados.
+   *
+   * @param filters - Filtros aplicados por el usuario
+   * @returns Descripción del contexto de filtros
+   */
+  private buildFilterContext(filters: PolicyFilters): string {
+    const contexts: string[] = [];
+
+    if (filters.status) {
+      const statusLabels: Record<string, string> = {
+        active: 'pólizas activas',
+        expired: 'pólizas expiradas',
+        cancelled: 'pólizas canceladas'
+      };
+      contexts.push(statusLabels[filters.status] || filters.status);
+    }
+
+    if (filters.policy_type) {
+      const typeLabels: Record<string, string> = {
+        Property: 'seguros de propiedad',
+        Auto: 'seguros de auto',
+        Life: 'seguros de vida',
+        Health: 'seguros de salud'
+      };
+      contexts.push(typeLabels[filters.policy_type] || filters.policy_type);
+    }
+
+    if (filters.q) {
+      contexts.push(`búsqueda: "${filters.q}"`);
+    }
+
+    // Si no hay filtros, analizar todo el portfolio
+    if (contexts.length === 0) {
+      return 'todo el portfolio';
+    }
+
+    // Si hay múltiples filtros, combinarlos con "y"
+    return contexts.join(' y ');
   }
 
   /**
@@ -310,11 +459,13 @@ Solo responde con el JSON, sin texto adicional.`;
     summary: PolicySummary,
     filters: PolicyFilters
   ): string {
+    const filterContext = this.buildFilterContext(filters);
+
     return `
-Analiza este portafolio de seguros:
+Analiza este portafolio de seguros ENFOCÁNDOTE ESPECÍFICAMENTE en ${filterContext}:
 
 Resumen:
-- Total pólizas: ${summary.total_policies}
+- Total pólizas analizadas: ${summary.total_policies}
 - Premium total: $${summary.total_premium_usd.toLocaleString()}
 - Por estado: ${JSON.stringify(summary.count_by_status)}
 - Premium por tipo: ${JSON.stringify(summary.premium_by_type)}
@@ -327,6 +478,12 @@ ${JSON.stringify(policies.slice(0, 10), null, 2)}
 Valores mínimos asegurados por regla de negocio:
 - Property: $5,000
 - Auto: $10,000
+
+IMPORTANTE:
+- Genera recomendaciones ESPECÍFICAS para ${filterContext}
+- Si hay un filtro de tipo de póliza, enfócate en ese tipo específico
+- Si hay un filtro de estado, analiza las implicaciones de ese estado
+- Sé CONCRETO y ACCIONABLE en tus recomendaciones
 
 Proporciona análisis de riesgos y recomendaciones en español.
     `;
