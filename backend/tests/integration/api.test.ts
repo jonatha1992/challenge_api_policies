@@ -7,14 +7,16 @@ import request from 'supertest';
 import express, { Express } from 'express';
 
 // Mock de la base de datos antes de importar rutas
-const mockQuery = jest.fn();
+// Mock de la base de datos antes de importar rutas
 jest.mock('../../src/config/database', () => ({
-  pool: {
-    query: mockQuery,
-    connect: jest.fn()
-  },
+  query: jest.fn(),
+  useSQLite: false,
+  checkConnection: jest.fn().mockResolvedValue({ connected: true, version: '1.0.0' }),
   initializeDatabase: jest.fn().mockResolvedValue(undefined)
 }));
+
+import { query } from '../../src/config/database';
+const mockQuery = query as jest.Mock;
 
 // Mock del logger
 jest.mock('../../src/utils/logger', () => ({
@@ -210,7 +212,8 @@ POL-001,John Doe,Property,2024-01-01,2024-12-31,1500,active,100000`;
               end_date: new Date('2024-12-31'),
               premium_usd: 1500,
               status: 'active',
-              insured_value_usd: 100000
+              insured_value_usd: 100000,
+              was_insert: true
             }]
           });
         }

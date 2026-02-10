@@ -1,4 +1,4 @@
-import { pool } from '../config/database';
+import { query } from '../config/database';
 import { Operation, OperationStatus } from '../types/operation.types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -33,7 +33,7 @@ export class OperationService {
     };
 
     // Insertar la operación en la base de datos
-    await pool.query(
+    await query(
       `INSERT INTO operations (id, endpoint, status, correlation_id)
        VALUES ($1, $2, $3, $4)`,
       [operation.id, operation.endpoint, operation.status, operation.correlation_id]
@@ -90,7 +90,7 @@ export class OperationService {
     parameterValues.push(id);
 
     // Ejecutar la consulta de actualización
-    await pool.query(
+    await query(
       `UPDATE operations SET ${fieldsToUpdate.join(', ')} WHERE id = $${parameterIndex}`,
       parameterValues
     );
@@ -106,7 +106,7 @@ export class OperationService {
    */
   async getOperation(id: string): Promise<Operation | null> {
     // Ejecutar consulta para obtener la operación por ID
-    const queryResult = await pool.query(
+    const queryResult = await query(
       'SELECT * FROM operations WHERE id = $1',
       [id]
     );

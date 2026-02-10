@@ -85,16 +85,19 @@ app.use(routes);
 app.get('/health', async (req, res) => {
   try {
     // Verificar conexión a base de datos
-    const { pool } = await import('./config/database');
-    const client = await pool.connect();
-    await client.query('SELECT 1');
-    client.release();
+    const { checkConnection } = await import('./config/database');
+    const dbStatus = await checkConnection();
+
+    if (!dbStatus.connected) {
+      throw new Error(dbStatus.error || 'Database disconnected');
+    }
 
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
       database: 'connected',
-      version: process.env.npm_package_version || '1.0.0'
+      version: process.env.npm_package_version || '1.0.0',
+      db_version: dbStatus.version
     });
   } catch (error) {
     res.status(503).json({

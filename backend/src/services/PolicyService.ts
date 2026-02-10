@@ -1,4 +1,4 @@
-import { pool } from '../config/database';
+import { query, useSQLite } from '../config/database';
 import {
   Policy,
   PolicyFilters,
@@ -24,45 +24,109 @@ export class PolicyService {
    * @returns Objeto con la póliza y un flag indicando si fue actualización
    */
   async insertPolicy(policy: Policy): Promise<{ policy: Policy; was_updated: boolean }> {
-    // Ejecutar consulta de inserción con manejo de conflictos
-    // xmax = 0 indica INSERT, xmax > 0 indica UPDATE (PostgreSQL 9.1+)
-    const queryResult = await pool.query(
-      `INSERT INTO policies
-       (policy_number, customer, policy_type, start_date, end_date, premium_usd, status, insured_value_usd, operation_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       ON CONFLICT (policy_number) DO UPDATE SET
-         customer = EXCLUDED.customer,
-         policy_type = EXCLUDED.policy_type,
-         start_date = EXCLUDED.start_date,
-         end_date = EXCLUDED.end_date,
-         premium_usd = EXCLUDED.premium_usd,
-         status = EXCLUDED.status,
-         insured_value_usd = EXCLUDED.insured_value_usd,
-         operation_id = EXCLUDED.operation_id
-       RETURNING *, (xmax = 0) AS was_insert`,
-      [
-        policy.policy_number,
-        policy.customer,
-        policy.policy_type,
-        policy.start_date,
-        policy.end_date,
-        policy.premium_usd,
-        policy.status,
-        policy.insured_value_usd,
-        policy.operation_id // Nuevo campo para trazabilidad
-      ]
-    );
+    if (useSQLite) {
+      // Implementación para SQLite (sin xmax ni RETURNING complejo)
 
-    const row = queryResult.rows[0];
-    const wasInsert = row.was_insert;
+      // 1. Intentar buscar si existe
+      const existingKeyCheck = await query(
+        'SELECT id FROM policies WHERE policy_number = $1',
+        [policy.policy_number]
+      );
 
-    // Eliminar campo técnico antes de retornar
-    delete row.was_insert;
+      if (existingKeyCheck.rowCount > 0) {
+        // UPDATE
+        await query(
+          `UPDATE policies SET
+             customer = $1,
+             policy_type = $2,
+             start_date = $3,
+             end_date = $4,
+             premium_usd = $5,
+             status = $6,
+             insured_value_usd = $7,
+             operation_id = $8
+           WHERE policy_number = $9`,
+          [
+            policy.customer,
+            policy.policy_type,
+            policy.start_date,
+            policy.end_date,
+            policy.premium_usd,
+            policy.status,
+            policy.insured_value_usd,
+            policy.operation_id,
+            policy.policy_number
+          ]
+        );
 
-    return {
-      policy: row,
-      was_updated: !wasInsert
-    };
+        const updatedRow = await query('SELECT * FROM policies WHERE policy_number = $1', [policy.policy_number]);
+        return { policy: updatedRow.rows[0], was_updated: true };
+
+      } else {
+        // INSERT
+        await query(
+          `INSERT INTO policies
+           (policy_number, customer, policy_type, start_date, end_date, premium_usd, status, insured_value_usd, operation_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [
+            policy.policy_number,
+            policy.customer,
+            policy.policy_type,
+            policy.start_date,
+            policy.end_date,
+            policy.premium_usd,
+            policy.status,
+            policy.insured_value_usd,
+            policy.operation_id
+          ]
+        );
+
+        const insertedRow = await query('SELECT * FROM policies WHERE policy_number = $1', [policy.policy_number]);
+        return { policy: insertedRow.rows[0], was_updated: false };
+      }
+
+    } else {
+      // Implementación para PostgreSQL (original optimizada)
+      // Ejecutar consulta de inserción con manejo de conflictos
+      // xmax = 0 indica INSERT, xmax > 0 indica UPDATE (PostgreSQL 9.1+)
+      const queryResult = await query(
+        `INSERT INTO policies
+         (policy_number, customer, policy_type, start_date, end_date, premium_usd, status, insured_value_usd, operation_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (policy_number) DO UPDATE SET
+           customer = EXCLUDED.customer,
+           policy_type = EXCLUDED.policy_type,
+           start_date = EXCLUDED.start_date,
+           end_date = EXCLUDED.end_date,
+           premium_usd = EXCLUDED.premium_usd,
+           status = EXCLUDED.status,
+           insured_value_usd = EXCLUDED.insured_value_usd,
+           operation_id = EXCLUDED.operation_id
+         RETURNING *, (xmax = 0) AS was_insert`,
+        [
+          policy.policy_number,
+          policy.customer,
+          policy.policy_type,
+          policy.start_date,
+          policy.end_date,
+          policy.premium_usd,
+          policy.status,
+          policy.insured_value_usd,
+          policy.operation_id // Nuevo campo para trazabilidad
+        ]
+      );
+
+      const row = queryResult.rows[0];
+      const wasInsert = row.was_insert;
+
+      // Eliminar campo técnico antes de retornar
+      delete row.was_insert;
+
+      return {
+        policy: row,
+        was_updated: !wasInsert
+      };
+    }
   }
 
   /**
@@ -127,14 +191,14 @@ export class PolicyService {
       : '';
 
     // Obtener el total de registros que coinciden con los filtros
-    const countResult = await pool.query(
+    const countResult = await query(
       `SELECT COUNT(*) as total FROM policies ${whereClause}`,
       parameterValues
     );
-    const totalRecords = parseInt(countResult.rows[0].total);
+    const totalRecords = useSQLite ? (countResult.rows[0] as any).total : parseInt(countResult.rows[0].total);
 
     // Obtener los registros paginados ordenados por fecha de creación descendente
-    const itemsResult = await pool.query(
+    const itemsResult = await query(
       `SELECT * FROM policies ${whereClause}
        ORDER BY created_at DESC
        LIMIT $${parameterIndex++} OFFSET $${parameterIndex}`,
@@ -191,7 +255,7 @@ export class PolicyService {
       : '';
 
     // Consulta para obtener totales generales con filtros
-    const totalsQuery = await pool.query(`
+    const totalsQuery = await query(`
       SELECT
         COUNT(*)::int as total_policies,
         COALESCE(SUM(premium_usd), 0)::float as total_premium_usd
@@ -200,7 +264,7 @@ export class PolicyService {
     `, parameterValues);
 
     // Consulta para obtener conteo agrupado por estado con filtros
-    const statusQuery = await pool.query(`
+    const statusQuery = await query(`
       SELECT status, COUNT(*)::int as count
       FROM policies
       ${whereClause}
@@ -208,7 +272,7 @@ export class PolicyService {
     `, parameterValues);
 
     // Consulta para obtener suma de premium agrupada por tipo con filtros
-    const typeQuery = await pool.query(`
+    const typeQuery = await query(`
       SELECT policy_type, COALESCE(SUM(premium_usd), 0)::float as premium
       FROM policies
       ${whereClause}
@@ -223,8 +287,8 @@ export class PolicyService {
     };
 
     // Llenar los conteos por estado con los resultados de la consulta
-    statusQuery.rows.forEach(row => {
-      countByStatus[row.status] = row.count;
+    statusQuery.rows.forEach((row: any) => {
+      countByStatus[row.status] = useSQLite ? row.count : parseInt(row.count);
     });
 
     const premiumByType: Record<string, number> = {
@@ -235,14 +299,14 @@ export class PolicyService {
     };
 
     // Llenar los premiums por tipo con los resultados de la consulta
-    typeQuery.rows.forEach(row => {
-      premiumByType[row.policy_type] = row.premium;
+    typeQuery.rows.forEach((row: any) => {
+      premiumByType[row.policy_type] = useSQLite ? row.premium : parseFloat(row.premium);
     });
 
     // Retornar el resumen completo
     return {
-      total_policies: totalsQuery.rows[0].total_policies,
-      total_premium_usd: totalsQuery.rows[0].total_premium_usd,
+      total_policies: useSQLite ? (totalsQuery.rows[0] as any).total_policies : parseInt(totalsQuery.rows[0].total_policies),
+      total_premium_usd: useSQLite ? (totalsQuery.rows[0] as any).total_premium_usd : parseFloat(totalsQuery.rows[0].total_premium_usd),
       count_by_status: countByStatus,
       premium_by_type: premiumByType
     };
@@ -257,7 +321,7 @@ export class PolicyService {
    */
   async getSummary(): Promise<PolicySummary> {
     // Consulta para obtener totales generales
-    const totalsQuery = await pool.query(`
+    const totalsQuery = await query(`
       SELECT
         COUNT(*)::int as total_policies,
         COALESCE(SUM(premium_usd), 0)::float as total_premium_usd
@@ -265,14 +329,14 @@ export class PolicyService {
     `);
 
     // Consulta para obtener conteo agrupado por estado
-    const statusQuery = await pool.query(`
+    const statusQuery = await query(`
       SELECT status, COUNT(*)::int as count
       FROM policies
       GROUP BY status
     `);
 
     // Consulta para obtener suma de premium agrupada por tipo
-    const typeQuery = await pool.query(`
+    const typeQuery = await query(`
       SELECT policy_type, COALESCE(SUM(premium_usd), 0)::float as premium
       FROM policies
       GROUP BY policy_type
@@ -286,8 +350,8 @@ export class PolicyService {
     };
 
     // Llenar los conteos por estado con los resultados de la consulta
-    statusQuery.rows.forEach(row => {
-      countByStatus[row.status] = row.count;
+    statusQuery.rows.forEach((row: any) => {
+      countByStatus[row.status] = useSQLite ? row.count : parseInt(row.count);
     });
 
     const premiumByType: Record<string, number> = {
@@ -298,14 +362,14 @@ export class PolicyService {
     };
 
     // Llenar los premiums por tipo con los resultados de la consulta
-    typeQuery.rows.forEach(row => {
-      premiumByType[row.policy_type] = row.premium;
+    typeQuery.rows.forEach((row: any) => {
+      premiumByType[row.policy_type] = useSQLite ? row.premium : parseFloat(row.premium);
     });
 
     // Retornar el resumen completo
     return {
-      total_policies: totalsQuery.rows[0].total_policies,
-      total_premium_usd: totalsQuery.rows[0].total_premium_usd,
+      total_policies: useSQLite ? (totalsQuery.rows[0] as any).total_policies : parseInt(totalsQuery.rows[0].total_policies),
+      total_premium_usd: useSQLite ? (totalsQuery.rows[0] as any).total_premium_usd : parseFloat(totalsQuery.rows[0].total_premium_usd),
       count_by_status: countByStatus,
       premium_by_type: premiumByType
     };

@@ -14,6 +14,7 @@ export interface Operation {
   status: OperationStatus;       // Estado actual del procesamiento
   correlation_id: string;        // ID de correlación para agrupar logs relacionados
   rows_inserted: number;         // Número de filas insertadas exitosamente en la base de datos
+  rows_updated?: number;         // Número de filas actualizadas
   rows_rejected: number;         // Número de filas rechazadas por validaciones
   duration_ms?: number;          // Duración total del procesamiento en milisegundos (opcional)
   error_summary?: string | null; // Resumen de errores si la operación falló (opcional)
