@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { pool } from '../config/database';
+import { checkConnection } from '../config/database';
 import { validateEnv } from '../config/validateEnv';
 import logger from '../utils/logger';
 
@@ -88,14 +88,17 @@ export class DiagnosticController {
 
       // CHECK 2: Verificar conexión a base de datos
       try {
-        const client = await pool.connect();
-        const versionResult = await client.query('SELECT version()');
-        client.release();
+        const dbStatus = await checkConnection();
+        result.checks.database.connected = dbStatus.connected;
 
-        result.checks.database.connected = true;
-        result.checks.database.status = 'ok';
-        // Extraer solo la versión de PostgreSQL (primera parte del string)
-        result.checks.database.version = versionResult.rows[0].version.split(' ')[1];
+        if (dbStatus.connected) {
+          result.checks.database.status = 'ok';
+          result.checks.database.version = dbStatus.version;
+        } else {
+          result.checks.database.status = 'error';
+          result.checks.database.error = dbStatus.error;
+          result.status = 'error';
+        }
       } catch (dbError) {
         result.checks.database.connected = false;
         result.checks.database.status = 'error';

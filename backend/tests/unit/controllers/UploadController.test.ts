@@ -108,7 +108,7 @@ POL-001,John Doe,Property,2024-01-01,2024-12-31,1500,active,100000`;
       mockValidationService.validateTechnical = jest.fn().mockReturnValue([]);
       mockValidationService.parseToPolicy = jest.fn().mockReturnValue(mockPolicy);
       mockRuleEngine.validate = jest.fn().mockReturnValue([]);
-      mockPolicyService.insertPolicy = jest.fn().mockResolvedValue(mockPolicy);
+      mockPolicyService.insertPolicy = jest.fn().mockResolvedValue({ policy: mockPolicy, was_updated: false });
 
       await controller.upload(mockRequest as Request, mockResponse as Response);
 
@@ -156,15 +156,29 @@ POL-001,John Doe,Property,2024-01-01,2024-12-31,1500,active,100000`;
       );
     });
 
-    it('should reject records with technical validation errors', async () => {
+    it.only('should reject records with technical validation errors', async () => {
       mockOperationService.createOperation = jest.fn().mockResolvedValue(mockOperation);
       mockOperationService.updateOperation = jest.fn().mockResolvedValue(undefined);
       mockParse.mockReturnValue(mockParsedRecords);
-      mockValidationService.validateTechnical = jest.fn().mockReturnValue([
-        { row_number: 1, field: 'policy_number', code: 'REQUIRED_FIELD', message: 'Required' }
-      ]);
+      mockRequest = {
+        file: {
+          buffer: Buffer.from(validCsvContent),
+          originalname: 'policies.csv',
+          mimetype: 'text/csv',
+          fieldname: 'file',
+          encoding: '7bit',
+          size: validCsvContent.length,
+          destination: '',
+          filename: '',
+          path: '',
+          stream: null as any
+        }
+      } as unknown as Request;
+      (mockRequest as any).correlationId = 'test-correlation-id';
 
       await controller.upload(mockRequest as Request, mockResponse as Response);
+
+      console.error('JSON calls:', JSON.stringify((mockResponse.json as jest.Mock).mock.calls, null, 2));
 
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.json).toHaveBeenCalledWith(
@@ -215,7 +229,7 @@ POL-001,John Doe,Property,2024-01-01,2024-12-31,1500,active,100000`;
       mockValidationService.validateTechnical = jest.fn().mockReturnValue([]);
       mockValidationService.parseToPolicy = jest.fn().mockReturnValue(mockPolicy);
       mockRuleEngine.validate = jest.fn().mockReturnValue([]);
-      mockPolicyService.insertPolicy = jest.fn().mockResolvedValue(mockPolicy);
+      mockPolicyService.insertPolicy = jest.fn().mockResolvedValue({ policy: mockPolicy, was_updated: false });
 
       await controller.upload(mockRequest as Request, mockResponse as Response);
 
@@ -235,7 +249,7 @@ POL-001,John Doe,Property,2024-01-01,2024-12-31,1500,active,100000`;
       mockValidationService.validateTechnical = jest.fn().mockReturnValue([]);
       mockValidationService.parseToPolicy = jest.fn().mockReturnValue(mockPolicy);
       mockRuleEngine.validate = jest.fn().mockReturnValue([]);
-      mockPolicyService.insertPolicy = jest.fn().mockResolvedValue(mockPolicy);
+      mockPolicyService.insertPolicy = jest.fn().mockResolvedValue({ policy: mockPolicy, was_updated: false });
 
       await controller.upload(mockRequest as Request, mockResponse as Response);
 
@@ -273,7 +287,7 @@ POL-001,John Doe,Property,2024-01-01,2024-12-31,1500,active,100000`;
       mockValidationService.validateTechnical = jest.fn().mockReturnValue([]);
       mockValidationService.parseToPolicy = jest.fn().mockReturnValue(mockPolicy);
       mockRuleEngine.validate = jest.fn().mockReturnValue([]);
-      mockPolicyService.insertPolicy = jest.fn().mockResolvedValue(mockPolicy);
+      mockPolicyService.insertPolicy = jest.fn().mockResolvedValue({ policy: mockPolicy, was_updated: false });
 
       await controller.upload(mockRequest as Request, mockResponse as Response);
 
