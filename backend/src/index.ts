@@ -77,14 +77,13 @@ setupSwagger(app);
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to Challenge Teknet API',
-    documentation: '/api-docs',
-    api: '/api',
+    documentacion: '/api-docs',
     health: '/health',
     status: 'running'
   });
 });
 
-// Middleware de seguridad por API Key (aplicado globalmente a partir de aquí)
+// El middleware de seguridad apiKeyMiddleware ya maneja las excepciones de /health y /api-docs internamente
 app.use(apiKeyMiddleware);
 
 // ==========================================
