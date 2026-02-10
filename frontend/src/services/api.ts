@@ -3,14 +3,16 @@
 
 import axios from 'axios';
 
-// URL base de la API, configurable via variable de entorno
+// URL base de la API y clave secreta configuradas via variables de entorno
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_KEY = import.meta.env.VITE_API_KEY || '';
 
 // Instancia configurada de Axios para todas las llamadas a la API
 export const api = axios.create({
   baseURL: API_BASE,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'x-api-key': API_KEY
   }
 });
 

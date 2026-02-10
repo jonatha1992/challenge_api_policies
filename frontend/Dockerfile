@@ -15,9 +15,11 @@ RUN npm ci
 # Copiar código fuente
 COPY . .
 
-# Build argument para la URL del backend
+# Build arguments para la configuración en tiempo de compilación (Vite)
 ARG VITE_API_URL=http://localhost:3000
+ARG VITE_API_KEY
 ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_API_KEY=$VITE_API_KEY
 
 # Compilar aplicación para producción
 RUN npm run build

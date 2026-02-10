@@ -34,7 +34,9 @@ export const validateEnv = (): EnvValidationResult => {
   const optionalVars = [
     'GEMINI_API_KEY',
     'LOG_LEVEL',
-    'NODE_ENV'
+    'NODE_ENV',
+    'CORS_ORIGIN',
+    'API_KEY'
   ];
 
   const missingRequired: string[] = [];

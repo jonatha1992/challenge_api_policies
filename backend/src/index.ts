@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { correlationIdMiddleware } from './middleware/correlationId';
+import { apiKeyMiddleware } from './middleware/auth';
 import routes from './routes';
 import { initializeDatabase } from './config/database';
 import { setupSwagger } from './config/swagger';
@@ -27,8 +28,13 @@ const PORT = process.env.PORT || 3000;
 // CONFIGURACIÓN DE MIDDLEWARES GLOBALES
 // ==========================================
 
-// Middleware CORS para permitir requests desde el frontend
-app.use(cors());
+// Middleware CORS para permitir requests desde el frontend autorizado
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+app.use(cors({
+  origin: corsOrigin === '*' ? '*' : corsOrigin.split(','),
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'x-correlation-id']
+}));
 
 // Middleware para parsear JSON en el body de las requests
 app.use(express.json());
@@ -36,6 +42,10 @@ app.use(express.json());
 // Middleware personalizado para asignar ID de correlación a cada request
 // Esto permite rastrear requests a través de logs y operaciones
 app.use(correlationIdMiddleware);
+
+// Middleware de seguridad por API Key (aplicado globalmente excepto salud/docs si es necesario)
+// En este caso lo aplicamos globalmente para máxima seguridad
+app.use(apiKeyMiddleware);
 
 // ==========================================
 // MIDDLEWARE DE LOGGING DE REQUESTS
