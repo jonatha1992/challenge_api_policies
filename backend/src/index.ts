@@ -31,7 +31,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware CORS para permitir requests desde el frontend autorizado
 const corsOrigin = process.env.CORS_ORIGIN || '*';
 app.use(cors({
-  origin: corsOrigin === '*' ? '*' : corsOrigin.split(','),
+  origin: corsOrigin === '*' ? '*' : corsOrigin.split(',').map(o => o.trim()),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'x-correlation-id']
 }));
