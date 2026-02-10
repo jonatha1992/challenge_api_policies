@@ -133,7 +133,10 @@ npm run test-azure-db
 psql -d challenge_tekne -f database/migrations/001_create_tables.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> dev
 =======
 >>>>>>> dev
 
