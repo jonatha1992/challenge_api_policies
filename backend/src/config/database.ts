@@ -16,16 +16,26 @@ const useSQLite = process.env.NODE_ENV === 'development' && process.env.DB_TYPE 
 const isAzure = process.env.DB_HOST?.includes('postgres.database.azure.com');
 
 // Configuración para PostgreSQL (producción/Azure)
+// Configuración para PostgreSQL
+const connectionConfig = process.env.DB_URL
+  ? {
+    connectionString: process.env.DB_URL,
+    ssl: { rejectUnauthorized: false } // Railway requiere SSL para conexiones externas
+  }
+  : {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    database: process.env.DB_NAME || 'challenge_tekne',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    ssl: isAzure || process.env.DB_HOST?.includes('rlwy.net') ? { rejectUnauthorized: false } : undefined,
+  };
+
 export const pool = useSQLite ? null : new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'challenge_tekne',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  ssl: isAzure ? { rejectUnauthorized: false } : undefined,
+  ...connectionConfig,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000, // Aumentado para conexiones remotas
 });
 
 // Configuración para SQLite (desarrollo local)

@@ -28,8 +28,8 @@ export class PolicyService {
     // xmax = 0 indica INSERT, xmax > 0 indica UPDATE (PostgreSQL 9.1+)
     const queryResult = await pool.query(
       `INSERT INTO policies
-       (policy_number, customer, policy_type, start_date, end_date, premium_usd, status, insured_value_usd)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       (policy_number, customer, policy_type, start_date, end_date, premium_usd, status, insured_value_usd, operation_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (policy_number) DO UPDATE SET
          customer = EXCLUDED.customer,
          policy_type = EXCLUDED.policy_type,
@@ -37,7 +37,8 @@ export class PolicyService {
          end_date = EXCLUDED.end_date,
          premium_usd = EXCLUDED.premium_usd,
          status = EXCLUDED.status,
-         insured_value_usd = EXCLUDED.insured_value_usd
+         insured_value_usd = EXCLUDED.insured_value_usd,
+         operation_id = EXCLUDED.operation_id
        RETURNING *, (xmax = 0) AS was_insert`,
       [
         policy.policy_number,
@@ -47,7 +48,8 @@ export class PolicyService {
         policy.end_date,
         policy.premium_usd,
         policy.status,
-        policy.insured_value_usd
+        policy.insured_value_usd,
+        policy.operation_id // Nuevo campo para trazabilidad
       ]
     );
 

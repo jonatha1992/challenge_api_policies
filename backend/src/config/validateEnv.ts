@@ -18,15 +18,19 @@ interface EnvValidationResult {
 export const validateEnv = (): EnvValidationResult => {
   // Variables requeridas para operación básica del servidor
   const requiredVars = [
+    'PORT'
+  ];
+
+  // Variables de base de datos (se requiere DB_URL o el conjunto completo de credenciales)
+  const dbVars = [
     'DB_HOST',
     'DB_PORT',
     'DB_NAME',
     'DB_USER',
-    'DB_PASSWORD',
-    'PORT'
+    'DB_PASSWORD'
   ];
 
-  // Variables opcionales que habilitan features adicionales
+  // Variables opcionales que habilitan features adicionales (no bloquean inicio)
   const optionalVars = [
     'GEMINI_API_KEY',
     'LOG_LEVEL',
@@ -36,18 +40,28 @@ export const validateEnv = (): EnvValidationResult => {
   const missingRequired: string[] = [];
   const missingOptional: string[] = [];
 
-  // Validar variables requeridas
+  // Validar variables base requeridas
   for (const varName of requiredVars) {
     const value = process.env[varName];
-
-    // Considerar inválido si está undefined, null, o string vacío
-    // También invalida strings que solo contienen espacios en blanco
     if (!value || value.trim() === '') {
       missingRequired.push(varName);
     }
   }
 
-  // Validar variables opcionales (solo para logging)
+  // Validar conexión a BD: Se requiere DB_URL O todas las variables individuales
+  const hasDbUrl = process.env.DB_URL && process.env.DB_URL.trim() !== '';
+  const hasAllDbVars = dbVars.every(v => process.env[v] && process.env[v]!.trim() !== '');
+
+  if (!hasDbUrl && !hasAllDbVars) {
+    // Si no hay DB_URL ni variables completas, exigir las individuales
+    dbVars.forEach(v => {
+      if (!process.env[v] || process.env[v]!.trim() === '') {
+        missingRequired.push(v);
+      }
+    });
+  }
+
+  // Validar variables opcionales (solo para logging informativo)
   for (const varName of optionalVars) {
     const value = process.env[varName];
     if (!value || value.trim() === '') {

@@ -10,6 +10,7 @@ export type PolicyStatus = 'active' | 'expired' | 'cancelled';    // Estados pos
  */
 export interface Policy {
   id?: number;              // ID único en base de datos (opcional para nuevas pólizas)
+  operation_id?: string;    // ID de la operación que creó/actualizó la póliza
   policy_number: string;    // Número único de la póliza
   customer: string;         // Nombre del cliente asegurado
   policy_type: PolicyType;  // Tipo de póliza (Property, Auto, Life, Health)

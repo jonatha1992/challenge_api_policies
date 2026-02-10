@@ -110,6 +110,9 @@ export class UploadController {
       const updatedPolicyNumbers: string[] = [];
 
       for (const { policy } of validPolicies) {
+        // Asignar el ID de la operación actual a la póliza para trazabilidad
+        policy.operation_id = operation.id;
+
         const result = await this.policyService.insertPolicy(policy);
 
         if (result.was_updated) {
