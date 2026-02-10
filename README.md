@@ -130,8 +130,8 @@ npm run test-azure-db
 
 # Ejecutar migraciones
 
+```bash
 psql -d challenge_tekne -f database/migrations/001_create_tables.sql
-
 ```
 
 ### 2. Backend
@@ -145,14 +145,6 @@ npm run dev
 ```
 
 El servidor inicia en `http://localhost:3000`
-
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
 
 La aplicacion inicia en `http://localhost:5173`
 
@@ -187,8 +179,6 @@ VITE_API_URL=http://localhost:3000
 ```
 
 **IMPORTANTE**: Las variables de entorno del frontend deben empezar con `VITE_` para ser expuestas al cliente.
-
-## Documentación Interactiva de la API (Swagger)
 
 La API cuenta con documentación interactiva completa generada con Swagger/OpenAPI 3.0.
 

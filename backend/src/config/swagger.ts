@@ -819,8 +819,8 @@ const swaggerSpec = swaggerJsdoc(options);
  * @param app - Instancia de Express
  */
 export const setupSwagger = (app: Express): void => {
-  // Servir la documentacion de Swagger UI en /api
-  app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  // Servir la documentacion de Swagger UI en /api-docs
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Insurance Policy API - Documentation',
     swaggerOptions: {

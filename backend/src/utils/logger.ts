@@ -19,14 +19,11 @@ interface LogContext {
 }
 
 /**
- * Determina el directorio de logs según el entorno.
- * - Desarrollo: ./logs (dentro del proyecto)
- * - Producción: Variable LOG_DIR o /var/log/challenge-tekne
+ * Determina el directorio de logs.
+ * Prioriza la variable de entorno LOG_DIR si está definida.
+ * Por defecto usa ./logs relativo a la raíz del proyecto backend.
  */
-const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
-const LOG_DIR = isDev
-  ? path.join(__dirname, '../../logs')                    // Desarrollo
-  : process.env.LOG_DIR || '/var/log/challenge-tekne';   // Producción
+const LOG_DIR = process.env.LOG_DIR || path.join(__dirname, '../../logs');
 
 // Crear directorio de logs si no existe
 if (!fs.existsSync(LOG_DIR)) {

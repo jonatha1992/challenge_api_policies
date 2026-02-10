@@ -17,9 +17,11 @@ async function runMigrations() {
 
     // Configurar pool de conexiones PostgreSQL para Azure
     // Configurar pool de conexiones PostgreSQL
-    const connectionConfig = process.env.DB_URL
+    const dbUrl = process.env.DATABASE_URL || process.env.DB_URL;
+
+    const connectionConfig = dbUrl
         ? {
-            connectionString: process.env.DB_URL,
+            connectionString: dbUrl,
             ssl: { rejectUnauthorized: false }
         }
         : {
@@ -97,12 +99,13 @@ async function runMigrations() {
 }
 
 // Verificar que las variables necesarias estén configuradas
-if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD) {
+const hasDbUrl = (process.env.DB_URL && process.env.DB_URL.trim() !== '') ||
+    (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '');
+const hasAllDbVars = process.env.DB_HOST && process.env.DB_USER && process.env.DB_PASSWORD;
+
+if (!hasDbUrl && !hasAllDbVars) {
     console.error('❌ Variables de entorno faltantes:');
-    console.log('   - DB_HOST: servidor PostgreSQL');
-    console.log('   - DB_USER: usuario de la base de datos');
-    console.log('   - DB_PASSWORD: contraseña del usuario');
-    console.log('\n💡 Configura estas variables en el archivo .env');
+    console.log('   Debe proporcionar DATABASE_URL/DB_URL o (DB_HOST, DB_USER, DB_PASSWORD)');
     process.exit(1);
 }
 

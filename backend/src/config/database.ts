@@ -15,11 +15,12 @@ export const useSQLite = process.env.NODE_ENV === 'development' && process.env.D
 // Detectar si es Azure PostgreSQL (requiere SSL)
 const isAzure = process.env.DB_HOST?.includes('postgres.database.azure.com');
 
-// Configuración para PostgreSQL (producción/Azure)
-// Configuración para PostgreSQL
-const connectionConfig = process.env.DB_URL
+// Configuración para PostgreSQL (producción/railway)
+const dbUrl = process.env.DATABASE_URL || process.env.DB_URL;
+
+const connectionConfig = dbUrl
   ? {
-    connectionString: process.env.DB_URL,
+    connectionString: dbUrl,
     ssl: { rejectUnauthorized: false } // Railway requiere SSL para conexiones externas
   }
   : {
