@@ -40,11 +40,51 @@ app.use(cors({
 app.use(express.json());
 
 // Middleware personalizado para asignar ID de correlación a cada request
-// Esto permite rastrear requests a través de logs y operaciones
 app.use(correlationIdMiddleware);
 
-// Middleware de seguridad por API Key (aplicado globalmente excepto salud/docs si es necesario)
-// En este caso lo aplicamos globalmente para máxima seguridad
+// ==========================================
+// ENDPOINTS PÚBLICOS (Sin autenticación)
+// ==========================================
+
+// Endpoint de health check para monitoreo y load balancers
+app.get('/health', async (req, res) => {
+  try {
+    // Verificar conexión a base de datos
+    const { checkConnection } = await import('./config/database');
+    const dbStatus = await checkConnection();
+
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      database: dbStatus.connected ? 'connected' : 'disconnected',
+      version: process.env.npm_package_version || '1.0.0',
+      db_version: dbStatus.version
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      database: 'disconnected',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Swagger docs (Público)
+setupSwagger(app);
+
+// Root path (Público - para verificar que el API está vivo)
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to Challenge Teknet API',
+    documentation: '/api-docs',
+    api: '/api',
+    health: '/health',
+    status: 'running'
+  });
+});
+
+// Middleware de seguridad por API Key (aplicado globalmente a partir de aquí)
 app.use(apiKeyMiddleware);
 
 // ==========================================
@@ -76,9 +116,7 @@ app.use((req, res, next) => {
 // ==========================================
 // CONFIGURACIÓN DE SWAGGER/OPENAPI
 // ==========================================
-
-// Configurar documentación interactiva de la API
-setupSwagger(app);
+// Movido antes del middleware de autenticación
 
 // ==========================================
 // CONFIGURACIÓN DE RUTAS
@@ -87,37 +125,7 @@ setupSwagger(app);
 // Montar todas las rutas de la API en la aplicación
 app.use(routes);
 
-// ==========================================
-// ENDPOINTS DE UTILIDAD
-// ==========================================
-
-// Endpoint de health check para monitoreo y load balancers
-app.get('/health', async (req, res) => {
-  try {
-    // Verificar conexión a base de datos
-    const { checkConnection } = await import('./config/database');
-    const dbStatus = await checkConnection();
-
-    if (!dbStatus.connected) {
-      throw new Error(dbStatus.error || 'Database disconnected');
-    }
-
-    res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      database: 'connected',
-      version: process.env.npm_package_version || '1.0.0',
-      db_version: dbStatus.version
-    });
-  } catch (error) {
-    res.status(503).json({
-      status: 'error',
-      timestamp: new Date().toISOString(),
-      database: 'disconnected',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
+// (Endpoints de salud movidos arriba)
 
 // ==========================================
 // MANEJO GLOBAL DE ERRORES
