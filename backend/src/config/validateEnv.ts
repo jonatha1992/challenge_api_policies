@@ -48,8 +48,9 @@ export const validateEnv = (): EnvValidationResult => {
     }
   }
 
-  // Validar conexión a BD: Se requiere DB_URL O todas las variables individuales
-  const hasDbUrl = process.env.DB_URL && process.env.DB_URL.trim() !== '';
+  // Validar conexión a BD: Se requiere DB_URL, DATABASE_URL O todas las variables individuales
+  const hasDbUrl = (process.env.DB_URL && process.env.DB_URL.trim() !== '') ||
+    (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '');
   const hasAllDbVars = dbVars.every(v => process.env[v] && process.env[v]!.trim() !== '');
 
   if (!hasDbUrl && !hasAllDbVars) {
