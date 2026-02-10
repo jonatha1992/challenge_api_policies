@@ -130,16 +130,8 @@ npm run test-azure-db
 
 # Ejecutar migraciones
 
+```bash
 psql -d challenge_tekne -f database/migrations/001_create_tables.sql
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> dev
-=======
->>>>>>> dev
-
 ```
 
 ### 2. Backend
@@ -151,7 +143,6 @@ cp .env.example .env
 # Editar .env con las credenciales de tu DB
 npm run dev
 ```
->>>>>>> dev
 
 El servidor inicia en `http://localhost:3000`
 
@@ -446,8 +437,6 @@ POL-002,Globex,Auto,2025-02-01,2026-01-31,800,active,15000
 - **Property**: insured_value_usd >= $5,000
 - **Auto**: insured_value_usd >= $10,000
 
-<<<<<<< HEAD
-=======
 ## Variables de Entorno
 
 ```env
@@ -469,7 +458,6 @@ GEMINI_API_KEY=AIza...
 LOG_LEVEL=info
 ```
 
->>>>>>> dev
 ## Testing
 
 ```bash
